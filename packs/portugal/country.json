@@ -1,0 +1,29 @@
+// Portugal, toy pack. Money in constant 2024 euros.
+{
+  "name": "Portugal",
+  "baseYear": 2024,
+  "output": 285e9,
+  "households": 4.2e6,
+  "debt": 270e9,
+  "effectiveRate": 0.022,
+  "workingAgeGrowth": -0.004,
+  "householdGrowth": 0.002,
+  "farmShare": 0.025,
+  "firstElectionYear": 2,
+  "policy": {
+    "taxes": { "income": 0.36, "corporate": 0.20, "consumption": 0.21 },
+    "plannedDeficit": 0.0,
+    "budgetShares": {
+      "health": 0.165, "education": 0.10, "infrastructure": 0.14, "agriculture": 0.012,
+      "socialTransfers": 0.42, "security": 0.057, "administration": 0.106
+    }
+  },
+  "groups": {
+    "wageWeights":      [0.06, 0.12, 0.17, 0.24, 0.41],
+    "ownershipWeights": [0.02, 0.05, 0.10, 0.18, 0.65],
+    "transferWeights":  [0.35, 0.25, 0.20, 0.12, 0.08],
+    "spendingShares":   [0.98, 0.95, 0.90, 0.85, 0.70],
+    "progressivity":    [0.2, 0.5, 0.8, 1.1, 1.6]
+  },
+  "sources": "Output, households and debt approximate 2024 figures from general knowledge, unchecked. Budget shares loosely follow spending by function (social protection, health, education, economic affairs, defence and order, general services) as shares of spending excluding interest. Tax rates are effective averages chosen so revenue is about 43% of output. Everything else is assumed."
+}

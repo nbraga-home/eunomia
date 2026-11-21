@@ -1,0 +1,6 @@
+// Named assumption sets. The multiplier scales the returns on skills, health, infrastructure and farm productivity.
+{
+  "central":     { "returnsMultiplier": 1.0 },
+  "lowReturns":  { "returnsMultiplier": 0.5 },
+  "highReturns": { "returnsMultiplier": 1.5 }
+}

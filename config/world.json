@@ -1,0 +1,24 @@
+// The world, in yearly steps. Converted roughly from the monthly values in spec v2. Assumptions.
+{
+  "series": {
+    "exportDemand":    { "start": 1.0,  "mean": 1.0,  "pull": 0.45, "noise": 0.035, "kind": "log" },
+    "energyPrice":     { "start": 1.0,  "mean": 1.0,  "pull": 0.30, "noise": 0.14,  "kind": "log" },
+    "foodPrice":       { "start": 1.0,  "mean": 1.0,  "pull": 0.30, "noise": 0.07,  "kind": "log" },
+    "externalRate":    { "start": 0.02, "mean": 0.02, "pull": 0.20, "noise": 0.004, "kind": "level" },
+    "financialStress": { "start": 0.10, "mean": 0.10, "pull": 0.70, "noise": 0.15,  "kind": "level" }
+  },
+  "events": [
+    { "name": "Global recession", "annualOdds": 0.09, "stressCoefficient": 1.0, "minYears": 1, "maxYears": 2, "crisis": true,
+      "effects": [ { "series": "exportDemand", "multiply": 0.90 } ] },
+    { "name": "Financial crisis", "annualOdds": 0.05, "stressCoefficient": 2.0, "minYears": 1, "maxYears": 3, "crisis": true,
+      "effects": [ { "series": "financialStress", "add": 1.0 }, { "series": "exportDemand", "multiply": 0.95 } ] },
+    { "name": "Energy shock", "annualOdds": 0.07, "stressCoefficient": 0.0, "minYears": 1, "maxYears": 2, "crisis": false,
+      "effects": [ { "series": "energyPrice", "multiply": 1.50 } ] },
+    { "name": "Pandemic", "annualOdds": 0.025, "stressCoefficient": 0.0, "minYears": 1, "maxYears": 2, "crisis": true,
+      "effects": [ { "series": "exportDemand", "multiply": 0.85 } ] },
+    { "name": "Tourism slump", "annualOdds": 0.06, "stressCoefficient": 0.0, "minYears": 1, "maxYears": 1, "crisis": false,
+      "effects": [ { "series": "exportDemand", "multiply": 0.96 } ] },
+    { "name": "Drought", "annualOdds": 0.11, "stressCoefficient": 0.0, "minYears": 1, "maxYears": 1, "crisis": false,
+      "effects": [ { "series": "farmOutput", "multiply": 0.85 }, { "series": "foodPrice", "multiply": 1.05 } ] }
+  ]
+}

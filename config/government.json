@@ -1,0 +1,19 @@
+// Rules of the game. Fixed during a run; only the player changes them, before it starts.
+{
+  "horizonYears": 20,
+  "taxBounds": {
+    "income":      { "min": 0.05, "max": 0.60 },
+    "corporate":   { "min": 0.05, "max": 0.45 },
+    "consumption": { "min": 0.05, "max": 0.30 }
+  },
+  "maxTaxChangePerYear": 0.03,
+  "deficitBounds": { "min": -0.05, "max": 0.08 },
+  "reallocationAllowance": 0.05,
+  "floors": {
+    "debt":              { "enabled": true, "maxInterestShareOfRevenue": 0.20, "rateCeiling": 0.12 },
+    "incomeGroups":      { "enabled": true, "minShareOfStart": 0.80 },
+    "endStateStocks":    { "enabled": true, "threshold": 0.98 },
+    "endStatePipelines": { "enabled": true, "share": 0.95 }
+  },
+  "scoreTolerance": 0.001
+}

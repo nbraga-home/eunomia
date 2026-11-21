@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Eunomia.Cli/Eunomia.Cli.csproj" />
+    <Project Path="src/Eunomia.Core/Eunomia.Core.csproj" />
+    <Project Path="src/Eunomia.Governments/Eunomia.Governments.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Eunomia.Tests/Eunomia.Tests.csproj" />
+  </Folder>
+</Solution>
