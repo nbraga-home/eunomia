@@ -17,7 +17,7 @@
   "leakage":    { "base": 0.05, "capacityExponent": 1.0, "max": 0.5 },
   "collection": { "base": 0.90, "capacityExponent": 0.5 },
   "taxElasticity": { "income": 0.30, "corporate": 0.60, "consumption": 0.20 },
-  "investmentShareOfProfit": 0.35,
+  "investmentShareOfProfit": 0.60,
   "priceWeights": { "energy": 0.08, "food": 0.15 },
   "inflation": 0.02,
   "borrowing": {

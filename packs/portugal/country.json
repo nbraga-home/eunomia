@@ -11,7 +11,7 @@
   "farmShare": 0.025,
   "firstElectionYear": 2,
   "policy": {
-    "taxes": { "income": 0.36, "corporate": 0.20, "consumption": 0.21 },
+    "taxes": { "income": 0.42, "corporate": 0.20, "consumption": 0.24 },
     "plannedDeficit": 0.0,
     "budgetShares": {
       "health": 0.165, "education": 0.10, "infrastructure": 0.14, "agriculture": 0.012,
