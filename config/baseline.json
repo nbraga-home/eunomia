@@ -1,0 +1,28 @@
+// Scripted governments. Starting values, not fitted to Portugal's real budgets yet.
+{
+  "statusQuo": {
+    // Deficit limit: past the limit, cut the planned deficit and raise consumption tax.
+    "deficitLimit": 0.03,
+    "deficitCut": 0.01,
+    "consumptionTaxStep": 0.005,
+    "unwindBelow": 0.02,
+    "unwindYears": 2,
+    // Crisis reaction: in a recession, borrow more and move money into transfers from administration and security.
+    "recessionGrowth": -0.01,
+    "recoveryGrowth": 0.01,
+    "crisisDeficitRise": 0.01,
+    "crisisShareShift": 0.01,
+    // Election tilt: in an election year, move money into transfers from infrastructure and education.
+    "electionShareShift": 0.01
+  },
+  "technocrat": {
+    // Each year, move this much budget share out of transfers, until transfers reach the floor share of their start.
+    "yearlyShift": 0.01,
+    "transfersFloorShare": 0.90,
+    // Where the money goes. Sums to 1.
+    "targets": { "education": 0.30, "infrastructure": 0.40, "administration": 0.20, "health": 0.10 },
+    // Counter-cyclical: borrow a little more in a recession, return to the plan after.
+    "recessionGrowth": -0.01,
+    "recessionDeficitRise": 0.01
+  }
+}

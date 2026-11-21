@@ -64,6 +64,24 @@ Each step ends green (builds, tests pass) and is committed.
 6. A crude map viewer.
 7. Realism, only where steps 4 and 5 showed it was missing.
 
+## First look (step 4, Nov 21, 2026, unvalidated)
+
+`eunomia returns`: an extra 1% of output a year, borrowed, on each line, against frozen policy in a calm world (central set):
+
+| Line | Median income, year 5 | Year 10 | Year 20 |
+| --- | --- | --- | --- |
+| Social transfers | +1.57% | +1.50% | +1.36% |
+| Health | 0.00% | +0.28% | +0.71% |
+| Infrastructure | -0.06% | +0.14% | +0.62% |
+| Agriculture | +0.08% | +0.30% | +0.57% |
+| Education | -0.06% | -0.14% | +0.54% |
+| Administration | +0.06% | +0.04% | +0.13% |
+| Security | +0.06% | +0.04% | -0.11% |
+
+`eunomia pair --seeds 1-50`: the technocrat loses to the status quo in all 150 worlds (median about -1.8% at year 20), because it moves money out of transfers into investment that has not paid back by year 20. The status quo beats frozen in 38 of 50 worlds, through its crisis and election transfers.
+
+What this says: under this model and this score, **handing out borrowed money beats every investment for the median household within 20 years, even under high returns.** The debt it leaves (about +14% of output) breaches no floor. Agriculture, a tiny line, pays about as well as education: the stock-size artefact predicted from spec v2.
+
 ## Known questions to answer by running, not by writing
 
 - Is a line's return driven by its size today rather than by evidence? (Spec v2 finding: stocks assume today's spending has held forever.)

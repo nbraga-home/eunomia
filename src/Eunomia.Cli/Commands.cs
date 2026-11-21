@@ -1,3 +1,6 @@
+using System.Globalization;
+using System.Text;
+using Eunomia.Core;
 using Eunomia.Core.Config;
 using Eunomia.Core.Model;
 using Eunomia.Core.World;
@@ -7,11 +10,13 @@ namespace Eunomia.Cli;
 
 public static class Commands
 {
+    private static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
+
     public static int Run(Args a)
     {
-        var config = LoadConfig(a);
+        var (config, baseline) = LoadConfig(a);
         string set = a.Get("set", "central");
-        var government = Occupants.Create(a.Get("occupant", "frozen"));
+        var government = Occupants.Create(a.Get("occupant", "frozen"), baseline);
         ulong? seed = a.Has("flat") ? null : ulong.Parse(a.Get("seed", "1"));
         var feed = Feed(config, seed);
 
@@ -32,18 +37,111 @@ public static class Commands
         return 0;
     }
 
-    public static int Pair(Args a) => throw new ArgumentException("pair is not built yet.");
+    /// <summary>Two occupants in the same worlds. Each pair shares a seed, so world shocks cancel.</summary>
+    public static int Pair(Args a)
+    {
+        var (config, baseline) = LoadConfig(a);
+        string nameA = a.Get("a", "technocrat"), nameB = a.Get("b", "statusquo");
+        var seeds = a.GetSeeds("seeds", "1-20");
+        var sets = a.GetList("sets", "central,lowReturns,highReturns");
 
-    public static int Returns(Args a) => throw new ArgumentException("returns is not built yet.");
+        var csv = new StringBuilder("set,seed,outcome,aStatus,bStatus,aFinal,bFinal,aWorst,bWorst,finalDiff,worstDiff,aBreaches,bBreaches\n");
+        Console.WriteLine($"{nameA} (A) against {nameB} (B), {seeds.Count} worlds per assumption set\n");
+        Console.WriteLine($"{"set",-12} {"A wins",7} {"B wins",7} {"trade-off",10} {"both breached",14}   final median A vs B: {"min",7} {"median",7} {"max",7}");
+
+        foreach (string set in sets)
+        {
+            var outcomes = new List<Outcome>();
+            var finalDiffs = new List<double>();
+            foreach (ulong seed in seeds)
+            {
+                var feed = Feed(config, seed);
+                var ra = new Simulation(config, set, feed).Run(Occupants.Create(nameA, baseline)).Summary;
+                var rb = new Simulation(config, set, feed).Run(Occupants.Create(nameB, baseline)).Summary;
+                var outcome = Judge.Compare(ra, rb, config.Government.ScoreTolerance);
+                double fd = ra.FinalMedian / rb.FinalMedian - 1, wd = ra.WorstMedian / rb.WorstMedian - 1;
+                outcomes.Add(outcome);
+                finalDiffs.Add(fd);
+                csv.Append(string.Join(',', set, seed, outcome, ra.Status, rb.Status,
+                    F(ra.FinalMedian), F(rb.FinalMedian), F(ra.WorstMedian), F(rb.WorstMedian), F(fd), F(wd),
+                    Quote(Breaches(ra)), Quote(Breaches(rb)))).Append('\n');
+            }
+            finalDiffs.Sort();
+            Console.WriteLine($"{set,-12} {outcomes.Count(o => o == Outcome.AWins),7} {outcomes.Count(o => o == Outcome.BWins),7} " +
+                $"{outcomes.Count(o => o == Outcome.TradeOff),10} {outcomes.Count(o => o == Outcome.BothBreached),14}   " +
+                $"{"",21}{finalDiffs[0],7:+0.0%;-0.0%} {finalDiffs[finalDiffs.Count / 2],7:+0.0%;-0.0%} {finalDiffs[^1],7:+0.0%;-0.0%}");
+        }
+
+        string outPath = a.Get("out", Path.Combine(RepoRoot(), "runs", $"pair-{nameA}-{nameB}.csv"));
+        Directory.CreateDirectory(Path.GetDirectoryName(outPath)!);
+        File.WriteAllText(outPath, csv.ToString());
+        Console.WriteLine($"\nUnvalidated: results hold inside this model only. Details: {outPath}");
+        return 0;
+    }
+
+    /// <summary>
+    /// The returns table: for each budget line, the effect of spending an extra 1% of output on it every year,
+    /// paid for by borrowing, compared with the frozen government in a calm world.
+    /// </summary>
+    public static int Returns(Args a)
+    {
+        var (config, _) = LoadConfig(a);
+        var sets = a.GetList("sets", "central,lowReturns,highReturns");
+        double extra = double.Parse(a.Get("extra", "0.01"), Inv);
+        int[] checkpoints = [5, 10, 20];
+        var feed = Feed(config, null);
+
+        var csv = new StringBuilder("set,line,year,outputDiff,medianDiff,lowestFifthDiff,debtRatioDiff\n");
+        Console.WriteLine($"Extra {extra:P0} of output spent on one line every year, paid for by borrowing, against frozen policy in a calm world.");
+        Console.WriteLine("Each cell: change in output / change in median household income, at that year.\n");
+
+        foreach (string set in sets)
+        {
+            var frozen = new Simulation(config, set, feed).Run(new Frozen());
+            Console.WriteLine($"[{set}]");
+            Console.WriteLine($"  {"line",-16}" + string.Concat(checkpoints.Select(y => $"{"year " + y,18}")) + $"{"debt ratio y20",16}");
+            foreach (var line in BudgetLines.All)
+            {
+                var probe = new Simulation(config, set, feed).Run(new ReturnsProbe(line, extra));
+                var sb = new StringBuilder($"  {line,-16}");
+                foreach (int y in checkpoints)
+                {
+                    var p = probe.Years[y - 1];
+                    var f = frozen.Years[y - 1];
+                    double od = p.Output / f.Output - 1, md = p.MedianIncome / f.MedianIncome - 1;
+                    sb.Append($"{Pct(od),9}/{Pct(md),-8}");
+                    csv.Append(string.Join(',', set, line, y, F(od), F(md), F(p.GroupIncome[0] / f.GroupIncome[0] - 1), F(p.DebtRatio - f.DebtRatio))).Append('\n');
+                }
+                sb.Append($"{probe.Years[^1].DebtRatio - frozen.Years[^1].DebtRatio,16:+0.0%;-0.0%}");
+                Console.WriteLine(sb.ToString());
+            }
+            Console.WriteLine();
+        }
+
+        string outPath = a.Get("out", Path.Combine(RepoRoot(), "runs", "returns.csv"));
+        Directory.CreateDirectory(Path.GetDirectoryName(outPath)!);
+        File.WriteAllText(outPath, csv.ToString());
+        Console.WriteLine($"Details: {outPath}");
+        return 0;
+    }
+
+    private static string Breaches(RunSummary s) => string.Join("; ", s.Breaches.Select(b => $"{b.Floor} y{b.Year}"));
+    private static string Quote(string s) => s.Length == 0 ? "" : $"\"{s}\"";
+    private static string Pct(double x) => Math.Abs(x) < 0.00005 ? "0.00%" : x.ToString("+0.00%;-0.00%", Inv);
+    private static string F(double x) => x.ToString("G6", Inv);
 
     internal static IReadOnlyList<FeedRow> Feed(SimulationConfig config, ulong? seed) =>
         seed is null
             ? WorldGenerator.Flat(config.World, config.Government.HorizonYears)
             : WorldGenerator.Generate(config.World, seed.Value, config.Government.HorizonYears);
 
-    internal static SimulationConfig LoadConfig(Args a) => ConfigLoader.Load(
-        a.Get("config", Path.Combine(RepoRoot(), "config")),
-        a.Get("pack", Path.Combine(RepoRoot(), "packs", "portugal")));
+    internal static (SimulationConfig Config, BaselineConfig Baseline) LoadConfig(Args a)
+    {
+        string configDir = a.Get("config", Path.Combine(RepoRoot(), "config"));
+        var config = ConfigLoader.Load(configDir, a.Get("pack", Path.Combine(RepoRoot(), "packs", "portugal")));
+        var baseline = ConfigLoader.LoadFile<BaselineConfig>(Path.Combine(configDir, "baseline.json"));
+        return (config, baseline);
+    }
 
     internal static string RepoRoot()
     {
