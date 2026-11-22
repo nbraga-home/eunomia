@@ -116,6 +116,7 @@ public sealed record EconomyConfig
     public required RatingParams Rating { get; init; }
     public required ManagementParams Management { get; init; }
     public required EducationParams Education { get; init; }
+    public required EducationRegimeParams EducationRegimes { get; init; }
 
     /// <summary>Applies a named assumption set: scales the returns on skills, health, infrastructure, farm productivity and management.</summary>
     public EconomyConfig WithReturnsMultiplier(double m) => this with
@@ -183,6 +184,60 @@ public sealed record EducationParams
     public required double WageElasticity { get; init; }
 }
 
+public sealed record ProvisionShares
+{
+    public required double Public { get; init; }
+    public required double Mixed { get; init; }
+    public required double Private { get; init; }
+}
+
+public sealed record CompulsoryBoost
+{
+    /// <summary>Odds multiplier on completing basic school when schooling is compulsory to at least 15.</summary>
+    public required double Basic { get; init; }
+    /// <summary>Odds multiplier on completing secondary school when schooling is compulsory to 18.</summary>
+    public required double Secondary { get; init; }
+}
+
+/// <summary>
+/// How education regimes work (all assumptions). Fees and grants are shares of the cost of a year of higher
+/// education. A fifth's odds of going on to higher education fall by exp(-priceSensitivity × net cost).
+/// Effects are measured against the country's starting regime, so the starting regime changes nothing.
+/// </summary>
+public sealed record EducationRegimeParams
+{
+    public required int TransitionYears { get; init; }
+    /// <summary>Share of pupils in private schools under each provision regime.</summary>
+    public required ProvisionShares PrivatePupilShare { get; init; }
+    /// <summary>Learning per euro in private schools against public ones. Spanned by the named sets.</summary>
+    public required double PrivateEfficiency { get; init; }
+    /// <summary>Quality gap between the richest and poorest fifth per unit of private pupil share (sorting).</summary>
+    public required double SortingStrength { get; init; }
+    /// <summary>Share of disposable income the richest two fifths spend topping up, per unit of private pupil share.</summary>
+    public required double TopUpShareOfIncome { get; init; }
+    public required double FlatFee { get; init; }
+    /// <summary>Income-scaled fees by fifth, as multiples of the flat fee.</summary>
+    public required IReadOnlyList<double> IncomeScaledFees { get; init; }
+    public required IReadOnlyList<double> PriceSensitivity { get; init; }
+    public required double UniversalGrant { get; init; }
+    public required double TestedGrant { get; init; }
+    /// <summary>How many of the lowest fifths tested support reaches.</summary>
+    public required int TestedFifths { get; init; }
+    /// <summary>Share of eligible families who apply, times state capacity ^ exponent, at most 1.</summary>
+    public required double TakeUpBase { get; init; }
+    public required double TakeUpCapacityExponent { get; init; }
+    /// <summary>Share of tested support and fee exemptions lost to administration.</summary>
+    public required double TestingAdminCost { get; init; }
+    public required double SelectiveQualityGain { get; init; }
+    /// <summary>Selective systems cut the odds of staying on by exp(-penalty), by fifth.</summary>
+    public required IReadOnlyList<double> SelectivePenalty { get; init; }
+    public required CompulsoryBoost CompulsoryBoost { get; init; }
+    public required int EarmarkYears { get; init; }
+    public required double EarmarkMargin { get; init; }
+    /// <summary>Share of the reallocation allowance each regime change uses. Repealing an earmark costs double.</summary>
+    public required double RegimeChangeCost { get; init; }
+}
+
 /// <summary>A country's schooling today: completion in the current generation, and attainment of the workforce.</summary>
 public sealed record EducationData
 {
@@ -195,6 +250,8 @@ public sealed record ParameterSet
     public required double ReturnsMultiplier { get; init; }
     /// <summary>Overrides how strongly school stock per pupil turns into learning. Null keeps economy.json's value.</summary>
     public double? EducationSpendingElasticity { get; init; }
+    /// <summary>Overrides learning per euro in private schools against public ones. Null keeps economy.json's value.</summary>
+    public double? PrivateEfficiency { get; init; }
 }
 
 // ---------- World ----------
@@ -303,6 +360,13 @@ public sealed record FiscalRulesFloor
     public required int WindowYears { get; init; }
 }
 
+/// <summary>A constitutional right to education, enforced as a floor: every fifth's basic completion stays above the threshold.</summary>
+public sealed record RightToEducationFloor
+{
+    public required bool Enabled { get; init; }
+    public required double MinBasicCoverage { get; init; }
+}
+
 public sealed record Floors
 {
     public required DebtFloor Debt { get; init; }
@@ -310,6 +374,14 @@ public sealed record Floors
     public required IncomeGroupFloor IncomeGroups { get; init; }
     public required EndStateStocksFloor EndStateStocks { get; init; }
     public required EndStatePipelinesFloor EndStatePipelines { get; init; }
+    public required RightToEducationFloor RightToEducation { get; init; }
+}
+
+/// <summary>Rules the player sets before a run and no government can change.</summary>
+public sealed record Constitution
+{
+    /// <summary>Compulsory schooling age: 0 (none), 15 or 18.</summary>
+    public required int CompulsoryAge { get; init; }
 }
 
 public sealed record GovernmentConfig
@@ -324,6 +396,7 @@ public sealed record GovernmentConfig
     public required Bounds ManagementShareBounds { get; init; }
     public required double MaxManagementChangePerYear { get; init; }
     public required Floors Floors { get; init; }
+    public required Constitution Constitution { get; init; }
     public required double ScoreTolerance { get; init; }
 }
 
@@ -384,6 +457,8 @@ public sealed record CountryPack
     public required Policy Policy { get; init; }
     public required IncomeGroups Groups { get; init; }
     public required EducationData Education { get; init; }
+    /// <summary>The compulsory schooling age today (0 for none). Coverage data reflects it.</summary>
+    public required int CompulsoryAge { get; init; }
     /// <summary>Where each number came from. Free text, kept beside the numbers.</summary>
     public string? Sources { get; init; }
 }

@@ -11,13 +11,17 @@
   "householdGrowth": 0.002,
   "farmShare": 0.025,
   "firstElectionYear": 2,
+  // Compulsory schooling today: to 18 since 2009. The coverage data below reflects it.
+  "compulsoryAge": 18,
   "policy": {
     "taxes": { "income": 0.42, "corporate": 0.20, "consumption": 0.24 },
     "plannedDeficit": 0.0,
     "budgetShares": {
       "health": 0.165, "education": 0.10, "infrastructure": 0.14, "agriculture": 0.012,
       "socialTransfers": 0.42, "security": 0.057, "administration": 0.106
-    }
+    },
+    // Today: mostly public schools, a low flat university fee, means-tested grants, comprehensive schooling, no earmark.
+    "educationRegime": { "provision": "public", "universityFees": "flat", "support": "tested", "standards": "comprehensive", "earmark": false }
   },
   "groups": {
     "wageWeights":      [0.06, 0.12, 0.17, 0.24, 0.41],

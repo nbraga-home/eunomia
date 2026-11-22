@@ -20,6 +20,7 @@ public static class ConfigLoader
         AllowTrailingCommas = true,
         UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow,
         WriteIndented = true,
+        Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) },
     };
 
     public static T LoadFile<T>(string path)
@@ -52,6 +53,8 @@ public static class ConfigLoader
         var economy = config.Economy.WithReturnsMultiplier(set.ReturnsMultiplier);
         if (set.EducationSpendingElasticity is double e)
             economy = economy with { Education = economy.Education with { SpendingElasticity = e } };
+        if (set.PrivateEfficiency is double pe)
+            economy = economy with { EducationRegimes = economy.EducationRegimes with { PrivateEfficiency = pe } };
         return economy;
     }
 }

@@ -39,6 +39,7 @@ public sealed record MeetingContext
     public required IReadOnlyList<Commitment> Commitments { get; init; }
     /// <summary>Each sector's management quality and absorption limit this year.</summary>
     public required IReadOnlyList<SectorStatus> Sectors { get; init; }
+    public required EducationStatus Education { get; init; }
     public required GovernmentConfig Rules { get; init; }
     /// <summary>Validates a proposal and returns its feasible form, envelope and appropriations. May be called freely.</summary>
     public required Func<Policy, CheckResult> Check { get; init; }
@@ -50,6 +51,18 @@ public sealed record MeetingContext
 /// (0.95) in the final year. A derived figure, like a budget office would publish; it reveals no parameters.
 /// </summary>
 public sealed record Commitment(string Stock, double Index, double Committed);
+
+/// <summary>The education regime as the government sees it: what is in force, how far it has phased in, the earmark, and what change costs.</summary>
+public sealed record EducationStatus(
+    EducationRegime Regime,
+    double PrivateShare,
+    bool Transitioning,
+    bool EarmarkActive,
+    int EarmarkYearsLeft,
+    double EarmarkFloor,
+    double TakeUp,
+    double RegimeChangeCost,
+    int CompulsoryAge);
 
 /// <summary>A sector as the government sees it: how well it is run, and how fast it can grow without waste.</summary>
 public sealed record SectorStatus(BudgetLine Line, double ManagementIndex, double Efficiency, double AbsorbableGrowth);

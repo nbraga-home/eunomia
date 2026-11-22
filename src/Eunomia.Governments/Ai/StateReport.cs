@@ -98,6 +98,20 @@ public static class StateReport
             sb.AppendLine($"| {(g == 0 ? "poorest" : g == 4 ? "richest" : (g + 1).ToString(Inv))} | {P(last.SecondaryByFifth[g])} | {P(last.HigherByFifth[g])} | {N(last.SkillsByFifth[g])} |");
         sb.AppendLine();
 
+        var ed = ctx.Education;
+        sb.AppendLine("## Education regime");
+        sb.AppendLine($"In force: provision {Word(ed.Regime.Provision)}, university fees {Word(ed.Regime.UniversityFees)}, student support {Word(ed.Regime.Support)}, standards {Word(ed.Regime.Standards)}, " +
+            (ed.EarmarkActive ? $"earmark holding education's share at {ed.EarmarkFloor.ToString("0.0000", Inv)} or above for {ed.EarmarkYearsLeft} more year(s)." : "no earmark."));
+        sb.AppendLine($"Pupils in private schools now: {P(ed.PrivateShare)}.{(ed.Transitioning ? " A regime change is still phasing in." : "")} Families applying for means-tested support: {P(ed.TakeUp)} of those eligible.");
+        sb.AppendLine($"Constitution (set by the player; no government can change it): schooling compulsory {(ed.CompulsoryAge > 0 ? "to " + ed.CompulsoryAge : "at no age")}.");
+        sb.AppendLine($"Options. Each change uses {P(ed.RegimeChangeCost)} of this year's capacity for change, shared with budget moves, and phases in over several years:");
+        sb.AppendLine("- provision: \"public\"; \"mixed\" (public money follows pupils into private schools too); \"private\" (most pupils in private schools, with public grants). Private schools may teach more or less per euro than public ones, and better-off families top them up, so their children gain most.");
+        sb.AppendLine("- universityFees: \"free\"; \"flat\" (everyone pays the same); \"incomeScaled\" (poorer families pay less if they apply, richer ones more). Fees fund the schools; higher fees mean fewer students, most among the poorer fifths.");
+        sb.AppendLine("- support: \"universal\" (a grant for every student); \"tested\" (larger grants for the two poorest fifths, if they apply; testing costs administration).");
+        sb.AppendLine("- standards: \"comprehensive\"; \"selective\" (more learning for those who stay; fewer of the poorer fifths stay on).");
+        sb.AppendLine("- earmark: true commits education's budget share to at least its level now (minus half a point) for ten years. Repealing it early counts as two changes.");
+        sb.AppendLine();
+
         if (ctx.Commitments.Count > 0)
         {
             var fl = ctx.Rules.Floors;
@@ -155,6 +169,8 @@ public static class StateReport
                             "socialTransfers": 0.42, "security": 0.057, "administration": 0.106 },
           "managementShares": { "health": 0.05, "education": 0.05, "infrastructure": 0.05, "agriculture": 0.05,
                                 "security": 0.05, "administration": 0.05 },
+          "educationRegime": { "provision": "public", "universityFees": "flat", "support": "tested",
+                               "standards": "comprehensive", "earmark": false },
           "rationale": "{{rationaleHint}}",
           "expectations": "What you expect to happen, and by when."
         }
@@ -164,7 +180,7 @@ public static class StateReport
     /// <summary>Most failed replies in the first runs were unit slips (42 for 42%).</summary>
     public const string Units =
         "All rates and shares are decimals: 0.42 means 42%, and a planned deficit of -0.005 means a surplus of half a percent of output. " +
-        "\"managementShares\" may be left out to keep the shares in force.";
+        "\"managementShares\" and \"educationRegime\" may be left out to keep what is in force.";
 
     /// <summary>A proposal as the branches see it: the numbers, and what moves against the policy in force.</summary>
     public static string DescribeRevision(string id, Policy p, CheckResult check, Policy inForce)
@@ -186,6 +202,8 @@ public static class StateReport
                 .Select(l => $"{Label(l)} {P2(m0[l])} → {P2(m[l])}").ToList();
             if (moves.Count > 0) sb.AppendLine($"- Management shares: {string.Join(", ", moves)}.");
         }
+        if (p.EducationRegime is { } er && inForce.EducationRegime is { } er0 && er != er0)
+            sb.AppendLine($"- Education regime: {RegimeChanges(er0, er)}.");
         foreach (var a in check.Absorption.Where(a => a.ExcessShare > 0.0005))
             sb.AppendLine($"- {Label(a.Line)}: front-line money grows {P(a.Growth)}, above the {P(a.Limit)} it can absorb; {P(a.ExcessShare)} of it is over the limit and mostly wasted.");
         if (check.Commitments.Count > 0)
@@ -199,6 +217,21 @@ public static class StateReport
         BudgetLine.SocialTransfers => "social transfers",
         _ => line.ToString().ToLowerInvariant(),
     };
+
+    /// <summary>What changes between two education regimes, in plain words.</summary>
+    public static string RegimeChanges(EducationRegime a, EducationRegime b)
+    {
+        var parts = new List<string>();
+        if (a.Provision != b.Provision) parts.Add($"provision {Word(a.Provision)} → {Word(b.Provision)}");
+        if (a.UniversityFees != b.UniversityFees) parts.Add($"university fees {Word(a.UniversityFees)} → {Word(b.UniversityFees)}");
+        if (a.Support != b.Support) parts.Add($"student support {Word(a.Support)} → {Word(b.Support)}");
+        if (a.Standards != b.Standards) parts.Add($"standards {Word(a.Standards)} → {Word(b.Standards)}");
+        if (a.Earmark != b.Earmark) parts.Add(b.Earmark ? "education earmark enacted" : "education earmark repealed");
+        return string.Join(", ", parts);
+    }
+
+    /// <summary>An enum value as it is written in replies: camelCase.</summary>
+    public static string Word<T>(T value) where T : struct, Enum { string s = value.ToString(); return char.ToLowerInvariant(s[0]) + s[1..]; }
 
     private static string StockLabel(string stock) => stock switch
     {

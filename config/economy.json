@@ -41,6 +41,30 @@
     "coverageSpeed": 0.25,
     "wageElasticity": 1.0
   },
+  // Education regimes (all assumptions). Fees and grants are shares of the cost of a year of higher education.
+  // Effects are measured against the starting regime, so Portugal's regime today changes nothing.
+  "educationRegimes": {
+    "transitionYears": 4,
+    "privatePupilShare": { "public": 0.0, "mixed": 0.3, "private": 0.6 },
+    "privateEfficiency": 1.0,
+    "sortingStrength": 0.15,
+    "topUpShareOfIncome": 0.01,
+    "flatFee": 0.10,
+    "incomeScaledFees": [0.0, 0.0, 1.0, 2.0, 3.0],
+    "priceSensitivity": [1.5, 1.2, 0.9, 0.6, 0.3],
+    "universalGrant": 0.10,
+    "testedGrant": 0.25,
+    "testedFifths": 2,
+    "takeUpBase": 0.75,
+    "takeUpCapacityExponent": 1.0,
+    "testingAdminCost": 0.10,
+    "selectiveQualityGain": 0.10,
+    "selectivePenalty": [0.6, 0.45, 0.3, 0.15, 0.0],
+    "compulsoryBoost": { "basic": 5.0, "secondary": 3.0 },
+    "earmarkYears": 10,
+    "earmarkMargin": 0.005,
+    "regimeChangeCost": 0.01
+  },
   "loss":       { "base": 0.01, "stabilityExponent": 0.5, "max": 0.5 },
   "leakage":    { "base": 0.05, "capacityExponent": 1.0, "max": 0.5 },
   "collection": { "base": 0.90, "capacityExponent": 0.5 },

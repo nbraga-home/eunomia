@@ -89,6 +89,10 @@ public static class AiWriter
             var m = ManagementShares.Lines.Where(l => Math.Abs(ma[l] - mb[l]) >= 0.0005).Select(l => $"{StateReport.Label(l)} {P(ma[l])} → {P(mb[l])}").ToList();
             if (m.Count > 0) parts.Add($"management shares: {string.Join(", ", m)}");
         }
+        if (a.EducationRegime is { } ra && b.EducationRegime is { } rb && ra != rb)
+        {
+            parts.Add($"education regime: {StateReport.RegimeChanges(ra, rb)}");
+        }
         var moves = BudgetLines.All
             .Select(l => (Line: l, Delta: b.BudgetShares[l] - a.BudgetShares[l]))
             .Where(m => Math.Abs(m.Delta) >= 0.0005)

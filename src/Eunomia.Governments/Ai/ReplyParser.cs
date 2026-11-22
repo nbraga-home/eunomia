@@ -89,7 +89,30 @@ public static class ReplyParser
             if (errors.Count > before) return null;
             management = ManagementShares.FromArray(m);
         }
-        return new Policy(taxes, deficit, BudgetShares.FromArray(shares.Select(s => s / sum).ToArray()), management);
+        // Optional: left out, the education regime in force is kept.
+        EducationRegime? regime = null;
+        if (root.TryGetProperty("educationRegime", out var rEl) && rEl.ValueKind == JsonValueKind.Object)
+        {
+            T Pick<T>(string name, T fallback) where T : struct, Enum
+            {
+                if (!rEl.TryGetProperty(name, out var v)) { errors.Add($"Missing \"{name}\" in educationRegime."); return fallback; }
+                if (v.ValueKind == JsonValueKind.String && Enum.TryParse<T>(v.GetString(), ignoreCase: true, out var parsed) && Enum.IsDefined(parsed))
+                    return parsed;
+                errors.Add($"\"{name}\" in educationRegime must be one of: {string.Join(", ", Enum.GetValues<T>().Select(e => $"\"{StateReport.Word(e)}\""))}.");
+                return fallback;
+            }
+            var provision = Pick("provision", Provision.Public);
+            var fees = Pick("universityFees", UniversityFees.Flat);
+            var support = Pick("support", StudentSupport.Tested);
+            var standards = Pick("standards", Standards.Comprehensive);
+            bool earmark = false;
+            if (!rEl.TryGetProperty("earmark", out var eEl) || (eEl.ValueKind != JsonValueKind.True && eEl.ValueKind != JsonValueKind.False))
+                errors.Add("\"earmark\" in educationRegime must be true or false.");
+            else earmark = eEl.GetBoolean();
+            if (errors.Count > before) return null;
+            regime = new EducationRegime(provision, fees, support, standards, earmark);
+        }
+        return new Policy(taxes, deficit, BudgetShares.FromArray(shares.Select(s => s / sum).ToArray()), management, regime);
     }
 
     private static readonly string[] ManagementNames = ["health", "education", "infrastructure", "agriculture", "security", "administration"];

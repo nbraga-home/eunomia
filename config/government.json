@@ -20,7 +20,11 @@
                            "requiredDeclineHigh": 0.01, "requiredDeclineMid": 0.005, "windowYears": 4 },
     "incomeGroups":     { "enabled": true, "minShareOfStart": 0.80 },
     "endStateStocks":    { "enabled": true, "threshold": 0.98 },
-    "endStatePipelines": { "enabled": true, "share": 0.95 }
+    "endStatePipelines": { "enabled": true, "share": 0.95 },
+    // A constitutional right to education: every fifth's basic completion stays at or above the threshold.
+    "rightToEducation":  { "enabled": true, "minBasicCoverage": 0.90 }
   },
+  // The constitution: set by the player before a run, never changed by a government.
+  "constitution": { "compulsoryAge": 18 },
   "scoreTolerance": 0.001
 }

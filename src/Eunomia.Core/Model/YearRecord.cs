@@ -66,6 +66,10 @@ public sealed record YearRecord
     /// <summary>Share of the current generation completing secondary and higher education, by fifth.</summary>
     public required IReadOnlyList<double> SecondaryByFifth { get; init; }
     public required IReadOnlyList<double> HigherByFifth { get; init; }
+    public required IReadOnlyList<double> BasicByFifth { get; init; }
+    /// <summary>Share of pupils in private schools, and whether an education earmark holds.</summary>
+    public required double PrivateShare { get; init; }
+    public required bool EarmarkActive { get; init; }
     /// <summary>Each line's efficiency (management index ^ exponent, capped), in budget-line order; 1 for social transfers.</summary>
     public required IReadOnlyList<double> Efficiency { get; init; }
 

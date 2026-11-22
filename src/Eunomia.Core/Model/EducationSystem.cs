@@ -61,8 +61,13 @@ public sealed class EducationSystem
     /// <summary>Each fifth's workforce skills against its own start.</summary>
     public IReadOnlyList<double> SkillsByFifth => Enumerable.Range(0, Fifths).Select(g => _workforce[g] / _workforce0[g]).ToArray();
 
+    public IReadOnlyList<double> BasicCoverage => _coverage[0];
     public IReadOnlyList<double> SecondaryCoverage => _coverage[1];
     public IReadOnlyList<double> HigherCoverage => _coverage[2];
+
+    /// <summary>Pupil-years one generation spends in school, at today's coverage.</summary>
+    public double PupilYearsPerCohort => PupilYears(_coverage);
+    public double HigherYears => _p.LevelYears.Higher;
 
     /// <summary>Wage shares by fifth: the starting shares, scaled by each fifth's skills against its start, summing to 1.</summary>
     public double[] WageWeights(IReadOnlyList<double> start)
@@ -73,18 +78,19 @@ public sealed class EducationSystem
     }
 
     /// <summary>One year: the school stock takes this year's effective spending, coverage and quality adjust, a generation leaves school and another retires.</summary>
-    public void Advance(double effectiveSpending, double cohortSize)
+    public void Advance(double effectiveSpending, double cohortSize, RegimeEffects? regime = null)
     {
+        regime ??= RegimeEffects.None;
         _schools.Advance(effectiveSpending);
 
         // Coverage moves toward what quality and the parents' schooling make families want.
         for (int g = 0; g < Fifths; g++)
         {
-            double pull = Math.Pow(Quality, _p.QualityElasticity) * Math.Pow(_workforce[g] / _workforce0[g], _p.ParentElasticity);
+            double pull = Math.Pow(Quality * regime.QualityFactor[g], _p.QualityElasticity) * Math.Pow(_workforce[g] / _workforce0[g], _p.ParentElasticity);
             double previous = 1.0;
             for (int level = 0; level < 3; level++)
             {
-                double target = previous * Probability(_baseOdds[level][g] * pull);
+                double target = previous * Probability(_baseOdds[level][g] * pull * regime.OddsFactor[level][g]);
                 _coverage[level][g] += _p.CoverageSpeed * (target - _coverage[level][g]);
                 _coverage[level][g] = Math.Min(_coverage[level][g], previous); // levels stay nested
                 previous = _coverage[level][g];
@@ -96,7 +102,7 @@ public sealed class EducationSystem
         Quality = Math.Pow(_schools.Value / pupils, _p.SpendingElasticity);
 
         // A generation leaves school now and joins the workforce later; a share of the workforce retires.
-        _entrants.Enqueue(Enumerable.Range(0, Fifths).Select(g => Quality * Skill(_coverage[0][g], _coverage[1][g], _coverage[2][g])).ToArray());
+        _entrants.Enqueue(Enumerable.Range(0, Fifths).Select(g => Quality * regime.QualityFactor[g] * Skill(_coverage[0][g], _coverage[1][g], _coverage[2][g])).ToArray());
         var arriving = _entrants.Dequeue();
         for (int g = 0; g < Fifths; g++)
             _workforce[g] = (1 - _retire) * _workforce[g] + _retire * arriving[g];

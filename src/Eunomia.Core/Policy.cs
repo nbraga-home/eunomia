@@ -90,7 +90,13 @@ public sealed record ManagementShares(
 }
 
 /// <summary>
-/// What a government decides: three tax rates, a planned deficit (share of output), the budget split, and the
-/// management share of each sector. A null management share means "keep the shares in force".
+/// What a government decides: three tax rates, a planned deficit (share of output), the budget split, the
+/// management share of each sector, and the education regime. Null management shares or regime mean
+/// "keep what is in force".
 /// </summary>
-public sealed record Policy(Taxes Taxes, double PlannedDeficit, BudgetShares BudgetShares, ManagementShares? ManagementShares = null);
+public sealed record Policy(
+    Taxes Taxes,
+    double PlannedDeficit,
+    BudgetShares BudgetShares,
+    ManagementShares? ManagementShares = null,
+    EducationRegime? EducationRegime = null);

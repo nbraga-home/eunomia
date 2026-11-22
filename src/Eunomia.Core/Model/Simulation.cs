@@ -38,6 +38,8 @@ public sealed class Simulation
     private readonly Stock _health, _infrastructure, _farm, _capacity, _stability, _capital;
     private readonly EducationSystem _education;
     private double[] _wageWeights;   // follows each fifth's skills
+    private readonly EducationRegimeState _regime;
+    private EducationFlows _educationFlows = EducationFlows.None; // last year's, reaching households this year
     private readonly Dictionary<BudgetLine, Sector> _sectors;
     private readonly Policy _startPolicy;
     private readonly YearRecord _opening;
@@ -51,7 +53,9 @@ public sealed class Simulation
         _parameterSet = parameterSet;
         _startTaxes = _pack.Policy.Taxes;
         var startManagement = _pack.Policy.ManagementShares ?? ManagementShares.Uniform(config.Economy.Management.StartShare);
-        _startPolicy = _pack.Policy with { ManagementShares = startManagement };
+        var startRegime = _pack.Policy.EducationRegime ?? new EducationRegime(Provision.Public, UniversityFees.Flat, StudentSupport.Tested, Standards.Comprehensive, Earmark: false);
+        _startPolicy = _pack.Policy with { ManagementShares = startManagement, EducationRegime = startRegime };
+        _regime = new EducationRegimeState(_e.EducationRegimes, startRegime, _pack.CompulsoryAge, _rules.Constitution.CompulsoryAge);
         _enacted = _startPolicy;
         _households = _pack.Households;
         _wageWeights = _pack.Groups.WageWeights.ToArray();
@@ -120,13 +124,19 @@ public sealed class Simulation
                 ReallocationAllowance = _rules.ReallocationAllowance * _capacity.Value,
                 Commitments = Commitments(null, null),
                 Sectors = _sectors.Values.Select(s => new SectorStatus(s.Line, s.ManagementIndex, s.Efficiency, s.AbsorbableGrowth)).ToList(),
+                Education = new EducationStatus(_regime.Regime, _regime.PrivateShare, _regime.Transitioning, _regime.EarmarkActive,
+                    _regime.EarmarkYearsLeft, _regime.EarmarkFloor, _regime.TakeUp(_capacity.Value), _e.EducationRegimes.RegimeChangeCost, _rules.Constitution.CompulsoryAge),
                 Rules = _rules,
                 Check = Check,
             };
             var proposal = government.Decide(context);
             var check = proposal is null ? null : Check(proposal);
             bool carried = check is null || !check.Ok;
-            if (!carried) _enacted = check!.Feasible!;
+            if (!carried)
+            {
+                _enacted = check!.Feasible!;
+                _regime.Enact(_enacted.EducationRegime!, _enacted.BudgetShares.Education);
+            }
             decisions.Add(new DecisionRecord
             {
                 Year = year,
@@ -170,7 +180,7 @@ public sealed class Simulation
             foreach (var sector in _sectors.Values)
             {
                 var split = sector.Advance(flows.Delivered[(int)sector.Line], _enacted.ManagementShares![sector.Line]);
-                if (sector.Line == BudgetLine.Education) _education.Advance(split.Effective, cohortSize: _labour);
+                if (sector.Line == BudgetLine.Education) AdvanceEducation(split, flows);
                 else StockFor(sector.Line).Advance(split.Effective);
             }
             _capital.Advance(flows.Investment);
@@ -227,19 +237,37 @@ public sealed class Simulation
                 errors.Add($"Management share for {line} can move at most {_rules.MaxManagementChangePerYear} a year (from {now} to {m}).");
         }
 
+        // Education regime: null keeps the regime in force. Each change uses part of the capacity for change;
+        // repealing an earmark that still holds counts double.
+        var regime = p.EducationRegime ?? _enacted.EducationRegime!;
+        int regimeChanges = regime.Changes(_enacted.EducationRegime!);
+        bool repeal = _regime.EarmarkActive && !regime.Earmark;
+        double regimeCost = (regimeChanges + (repeal ? 1 : 0)) * _e.EducationRegimes.RegimeChangeCost;
+        double capacityForChange = _rules.ReallocationAllowance * _capacity.Value;
+        if (regimeCost > capacityForChange + 1e-12)
+            errors.Add($"Changing the education regime ({regimeChanges} change(s){(repeal ? ", repealing the earmark counts double" : "")}) " +
+                       $"needs {regimeCost:P1} of the capacity for change; only {capacityForChange:P1} is available this year.");
+
         if (errors.Count > 0) return new CheckResult { Errors = errors };
 
-        // Limited state capacity: only so much of the budget can move between lines in a year.
+        // Limited state capacity: only so much of the budget can move between lines in a year, after regime changes.
         var current = _enacted.BudgetShares.ToArray();
         double cost = 0.5 * shares.Zip(current, (a, b) => Math.Abs(a - b)).Sum();
-        double allowance = _rules.ReallocationAllowance * _capacity.Value;
+        double allowance = Math.Max(0, capacityForChange - regimeCost);
         bool scaled = cost > allowance + 1e-12;
         if (scaled)
         {
             double k = allowance / cost;
             shares = current.Zip(shares, (c, s) => c + (s - c) * k).ToArray();
         }
-        var feasible = p with { BudgetShares = BudgetShares.FromArray(shares), ManagementShares = management };
+
+        if (_regime.EarmarkActive && regime.Earmark && shares[(int)BudgetLine.Education] < _regime.EarmarkFloor - 1e-9)
+            return new CheckResult
+            {
+                Errors = [$"The education earmark holds education's share at {_regime.EarmarkFloor:0.0000} or above for {_regime.EarmarkYearsLeft} more year(s); this budget gives it {shares[(int)BudgetLine.Education]:0.0000}."],
+            };
+
+        var feasible = p with { BudgetShares = BudgetShares.FromArray(shares), ManagementShares = management, EducationRegime = regime };
 
         double envelope = Envelope(feasible);
         if (envelope <= 0)
@@ -286,6 +314,23 @@ public sealed class Simulation
             double growth = s.Absorbed > 0 ? split.FrontLine / s.Absorbed - 1 : 0;
             return new AbsorptionNote(s.Line, growth, s.AbsorbableGrowth, split.FrontLine > 0 ? split.Excess / split.FrontLine : 0);
         }).ToList();
+
+    /// <summary>
+    /// Education's year: the regime phases in, its effects shape coverage and quality, and its money (fees,
+    /// grants, top-ups, testing costs, all as changes against the starting regime) moves between households and
+    /// schools. Households feel it next year; schools get it now, at the sector's effectiveness.
+    /// </summary>
+    private void AdvanceEducation(SectorSplit split, Flows flows)
+    {
+        if (_regime.Advance()) _enacted = _enacted with { EducationRegime = _regime.Regime }; // the earmark expired
+        double capacity = _capacity.Value;
+        var effects = _regime.Effects(capacity);
+        var money = _regime.Flows(flows.Delivered[(int)BudgetLine.Education], _education.HigherCoverage, _education.HigherYears,
+            _education.PupilYearsPerCohort, flows.Disposable, capacity);
+        double effectivePerEuro = split.FrontLine > 0 ? split.Effective / split.FrontLine : 1;
+        _education.Advance(Math.Max(0, split.Effective + money.SchoolMoney * effectivePerEuro), _labour, effects);
+        _educationFlows = money;
+    }
 
     /// <summary>What reaches the sector of an appropriation, after leakage at today's state capacity.</summary>
     private double Delivered(double appropriation) => appropriation * (1 - Leakage(_capacity.Value));
@@ -342,6 +387,8 @@ public sealed class Simulation
         public required double RevenueConsumption;
         public required double PriceIndex;
         public required double[] GroupIncome;
+        /// <summary>Disposable income by fifth, in euros.</summary>
+        public required double[] Disposable;
         public required double LeakageRate;
         public required double CollectionRate;
         public double Revenue => RevenueIncome + RevenueCorporate + RevenueConsumption;
@@ -396,7 +443,8 @@ public sealed class Simulation
             disposable[i] = wages * wageWeights[i]
                 - incomeTax * wageWeights[i] * g.Progressivity[i] / progressive
                 + dividends * g.OwnershipWeights[i]
-                + transfers * g.TransferWeights[i];
+                + transfers * g.TransferWeights[i]
+                + _educationFlows.HouseholdNet[i];
             consumption += g.SpendingShares[i] * disposable[i];
         }
         double consumptionTax = ConsumptionTax(policy.Taxes.Consumption, consumption, collection);
@@ -422,6 +470,7 @@ public sealed class Simulation
             RevenueConsumption = consumptionTax,
             PriceIndex = priceIndex,
             GroupIncome = disposable.Select(d => d / perGroupHouseholds / priceIndex).ToArray(),
+            Disposable = disposable,
             LeakageRate = leakage,
             CollectionRate = collection,
         };
@@ -478,6 +527,12 @@ public sealed class Simulation
     {
         var f = _rules.Floors;
         var eu = f.FiscalRules;
+        if (f.RightToEducation.Enabled)
+        {
+            for (int i = 0; i < Groups; i++)
+                if (r.BasicByFifth[i] < f.RightToEducation.MinBasicCoverage)
+                    breaches.Add(new Breach("rightToEducation", r.Year, r.CarriedOver, $"fifth {i + 1}: {r.BasicByFifth[i]:P1} complete basic school"));
+        }
         if (eu.Enabled && !r.EscapeClause)
         {
             if (r.DeficitRatio > eu.DeficitLimit + 1e-9)
@@ -576,6 +631,9 @@ public sealed class Simulation
         SkillsByFifth = _education?.SkillsByFifth ?? [1, 1, 1, 1, 1],
         SecondaryByFifth = _education?.SecondaryCoverage.ToArray() ?? _pack.Education.Coverage.Secondary.ToArray(),
         HigherByFifth = _education?.HigherCoverage.ToArray() ?? _pack.Education.Coverage.Higher.ToArray(),
+        BasicByFifth = _education?.BasicCoverage.ToArray() ?? _pack.Education.Coverage.Basic.ToArray(),
+        PrivateShare = _regime?.PrivateShare ?? 0,
+        EarmarkActive = _regime?.EarmarkActive ?? false,
         Health = _health?.Value ?? 1,
         Infrastructure = _infrastructure?.Value ?? 1,
         FarmProductivity = _farm?.Value ?? 1,
