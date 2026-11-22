@@ -62,9 +62,9 @@ The Haiku runs in `runs/` predate steps 1 to 3. Sonnet with the new levers (elev
 
 ## Open decisions for the owner
 
-1. Next after the AI reruns with education regimes: step 4 (health on the sector template).
+1. Next (to pick on resuming): (a) recommended: the "state a view on each lever" experiment, where the prompt asks for a one-line view on each education regime option every year, with no hint which is better, to test whether the AI's never changing the regime is caution or inattention (400 Sonnet calls, about 25 minutes, three at a time); (b) step 4, health on the sector template; (c) three branches on Sonnet (about 1,200 to 2,000 calls for 10 worlds).
 
-Decided Nov 22, 2026: the poorest fifth guards the win rule (build plan, tenth look); rerun the AI governments before health.
+Decided Nov 22, 2026: the poorest fifth guards the win rule (build plan, tenth look); the AI is told the comparison is with a typical government in the same world and shown the poorest fifth's share of the median (twelfth look). Sonnet is the model for AI batches; run them from a published copy, three worlds at a time.
 
 ## Backlog (known gaps, not built)
 
