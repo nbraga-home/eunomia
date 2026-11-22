@@ -63,7 +63,7 @@ public static class StateReport
         var enacted = ctx.Check(ctx.Enacted);
         sb.AppendLine("## Policy in force");
         var t = ctx.Enacted.Taxes;
-        sb.AppendLine($"- Taxes: income {P(t.Income)}, corporate {P(t.Corporate)}, consumption {P(t.Consumption)}. Planned deficit {P(ctx.Enacted.PlannedDeficit)}.");
+        sb.AppendLine($"- Taxes: income {P2(t.Income)}, corporate {P2(t.Corporate)}, consumption {P2(t.Consumption)}. Planned deficit {P2(ctx.Enacted.PlannedDeficit)}.");
         if (enacted.Ok)
         {
             sb.AppendLine($"- At these settings this year's budget for the seven lines is {Bn(enacted.Envelope)} ({P(enacted.Envelope / last.Output)} of last year's output):");
@@ -122,7 +122,7 @@ public static class StateReport
         var sb = new StringBuilder();
         sb.AppendLine($"### Revision {id}{(check.Scaled ? " (share changes scaled down to fit the reallocation limit)" : "")}");
         var t = p.Taxes;
-        sb.AppendLine($"- Taxes: income {P(t.Income)}, corporate {P(t.Corporate)}, consumption {P(t.Consumption)}. Planned deficit {P(p.PlannedDeficit)}.");
+        sb.AppendLine($"- Taxes: income {P2(t.Income)}, corporate {P2(t.Corporate)}, consumption {P2(t.Consumption)}. Planned deficit {P2(p.PlannedDeficit)}.");
         sb.AppendLine($"- Budget for the seven lines: {Bn(check.Envelope)}.");
         foreach (var line in BudgetLines.All)
         {
@@ -140,6 +140,8 @@ public static class StateReport
     };
 
     private static string P(double x) => (x * 100).ToString("0.0", Inv) + "%";
+    /// <summary>Two decimals for rates a government sets, so a 0.75% plan never reads as 0.8%.</summary>
+    private static string P2(double x) => (x * 100).ToString("0.00", Inv) + "%";
     private static string P0(double x) => (x * 100).ToString("0.#", Inv);
     private static string Pts(double x) => (x * 100).ToString("0.##", Inv) + " points";
     private static string N(double x) => x.ToString("0.00", Inv);

@@ -149,3 +149,7 @@ Its path: surpluses for twenty years paying debt from 95% to 50% of output; admi
 The run first showed a breach of the end-state pipeline floor. That was a bug: the report said committed spending must hold each stock "there" (at 0.98 or above), while the code demanded it hold the stock at its current, higher level. The check now matches the stated rule, and replaying the recorded decisions (no model calls) gives a clean run that beats all three scripted governments on both scores, in this one world.
 
 Worth watching: the poorest fifth ends lower than under any scripted government. The median score does not protect it beyond its 80% floor.
+
+## Fifth look: the three branches meet (Nov 22, 2026, three-year trial)
+
+Haiku in all three seats, world seed 1, three years. In 2026 the judiciary blocked the executive's first budget on the EU debt rule for 2027 (naming the floor, the year and the path); the executive cut the deficit, the legislature amended it lower, the executive accepted, the judiciary passed. In 2027 the executive declined an amendment as "internally inconsistent", which turned out to be a display bug: revisions showed rates to one decimal, so 0.75% read as 0.8%. Rates the government sets are now shown to two decimals.
