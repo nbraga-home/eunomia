@@ -42,7 +42,7 @@ public static class StateReport
         if (f.Debt.Enabled) sb.AppendLine($"- Debt stays payable: interest at most {P(f.Debt.MaxInterestShareOfRevenue)} of revenue, borrowing rate at most {P(f.Debt.RateCeiling)}.");
         if (eu.Enabled) sb.AppendLine($"- EU fiscal rules: deficit at most {P(eu.DeficitLimit)} of output; debt above {P(eu.DebtReference)} must fall on average over {eu.WindowYears} years (at least {Pts(eu.RequiredDeclineHigh)} a year above {P(eu.HighDebt)}, {Pts(eu.RequiredDeclineMid)} between). Suspended in years with an active crisis.");
         if (f.IncomeGroups.Enabled) sb.AppendLine($"- No income fifth falls below {P(f.IncomeGroups.MinShareOfStart)} of its starting real income.");
-        if (f.EndStateStocks.Enabled) sb.AppendLine($"- In the final year, the skills, health, infrastructure and state capacity indices are at least {f.EndStateStocks.Threshold.ToString("0.00", Inv)}, and the spending already committed to each is enough to keep it at {f.EndStateStocks.Threshold.ToString("0.00", Inv)} or above in the long run. A stock built above that level may drift down toward it.");
+        if (f.EndStateStocks.Enabled) sb.AppendLine($"- In the final year, the schools, health, infrastructure and state capacity indices are at least {f.EndStateStocks.Threshold.ToString("0.00", Inv)}, and the spending already committed to each is enough to keep it at {f.EndStateStocks.Threshold.ToString("0.00", Inv)} or above in the long run. A stock built above that level may drift down toward it.");
         sb.AppendLine();
         sb.AppendLine("## How you are judged");
         sb.AppendLine($"Real disposable income of the median household in year {ctx.HorizonYears}, and in the worst year along the way. A run that keeps every floor beats any run that breaks one.");
@@ -89,6 +89,14 @@ public static class StateReport
             }
             sb.AppendLine();
         }
+
+        sb.AppendLine("## Education, last year");
+        sb.AppendLine($"Schools index {N(last.Schools)}; quality of a school year {N(last.SchoolQuality)} (1.00 = start; spending per pupil drives it, and more pupils dilute it). School leavers join the workforce after some years, and about one in forty workers retires each year, so skills change slowly, generation by generation.");
+        sb.AppendLine("| Income fifth | Completing secondary | Completing higher | Workforce skills (1.00 = start) |");
+        sb.AppendLine("|---|---|---|---|");
+        for (int g = 0; g < 5; g++)
+            sb.AppendLine($"| {(g == 0 ? "poorest" : g == 4 ? "richest" : (g + 1).ToString(Inv))} | {P(last.SecondaryByFifth[g])} | {P(last.HigherByFifth[g])} | {N(last.SkillsByFifth[g])} |");
+        sb.AppendLine();
 
         if (ctx.Commitments.Count > 0)
         {

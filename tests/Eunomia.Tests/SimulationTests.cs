@@ -49,11 +49,12 @@ public class SimulationTests
         var c = Fixtures.Stationary();
         var frozen = Fixtures.RunFlat(c, Fixtures.Frozen);
         var boosted = Fixtures.RunFlat(c, Fixtures.Shift(BudgetLine.SocialTransfers, BudgetLine.Education, 0.02));
-        int delay = c.Economy.Stocks.Skills.DelayYears;
-
-        // Year-0 spending enters the stock at the end of year `delay`, so it first shows in year delay + 1.
-        for (int y = 0; y <= delay; y++) Assert.Equal(frozen.Years[y].Skills, boosted.Years[y].Skills, 12);
-        Assert.True(boosted.Years[delay + 1].Skills > frozen.Years[delay + 1].Skills);
+        // Year-0 money reaches the school stock after the schools delay; that year's leavers reach the workforce
+        // after the skills delay; records show start-of-year values, so the first change shows one year later.
+        int lag = c.Economy.Stocks.Schools.DelayYears + c.Economy.Stocks.Skills.DelayYears + 1;
+        for (int y = 0; y < lag; y++) Assert.Equal(frozen.Years[y].Skills, boosted.Years[y].Skills, 12);
+        Assert.True(boosted.Years[lag].Skills > frozen.Years[lag].Skills);
+        Assert.True(boosted.Years[lag].SchoolQuality > frozen.Years[lag].SchoolQuality);
         Assert.True(boosted.Years[^1].Output > frozen.Years[^1].Output);
     }
 
@@ -156,7 +157,7 @@ public class SimulationTests
         });
         var run = Fixtures.RunFlat(c, cut);
         Assert.Equal(RunStatus.Breached, run.Summary.Status);
-        Assert.Contains(run.Summary.Breaches, b => b.Floor == "endStatePipelines" && b.Detail.StartsWith("skills"));
+        Assert.Contains(run.Summary.Breaches, b => b.Floor == "endStatePipelines" && b.Detail.StartsWith("schools"));
     }
 
     [Fact]

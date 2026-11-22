@@ -58,6 +58,14 @@ public sealed record YearRecord
     public required double StateCapacity { get; init; }
     public required double Stability { get; init; }
     public required double PrivateCapital { get; init; }
+    /// <summary>The school stock, and how much a year of school teaches, against the start.</summary>
+    public required double Schools { get; init; }
+    public required double SchoolQuality { get; init; }
+    /// <summary>Each fifth's workforce skills against its own start, lowest first.</summary>
+    public required IReadOnlyList<double> SkillsByFifth { get; init; }
+    /// <summary>Share of the current generation completing secondary and higher education, by fifth.</summary>
+    public required IReadOnlyList<double> SecondaryByFifth { get; init; }
+    public required IReadOnlyList<double> HigherByFifth { get; init; }
     /// <summary>Each line's efficiency (management index ^ exponent, capped), in budget-line order; 1 for social transfers.</summary>
     public required IReadOnlyList<double> Efficiency { get; init; }
 

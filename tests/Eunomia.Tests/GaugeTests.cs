@@ -47,13 +47,13 @@ public class GaugeTests
                 p = p with { BudgetShares = BudgetShares.FromArray(s) };
             }
             var check = ctx.Check(p);
-            if (ctx.Year == ctx.HorizonYears - 1) finalSkills = check.Commitments.Single(x => x.Stock == "skills");
+            if (ctx.Year == ctx.HorizonYears - 1) finalSkills = check.Commitments.Single(x => x.Stock == "schools");
             return check.Feasible;
         });
         var run = Fixtures.RunFlat(c, g);
 
         bool gaugeSaysBreach = finalSkills!.Committed < c.Government.Floors.EndStatePipelines.Share;
-        bool breached = run.Summary.Breaches.Any(b => b.Floor == "endStatePipelines" && b.Detail.StartsWith("skills"));
+        bool breached = run.Summary.Breaches.Any(b => b.Floor == "endStatePipelines" && b.Detail.StartsWith("schools"));
         Assert.Equal(gaugeSaysBreach, breached);
         Assert.Equal(cut > 0, breached);
     }

@@ -14,7 +14,13 @@ public sealed record StockParams
 
 public sealed record StockSet
 {
+    /// <summary>
+    /// The workforce's skills. The exponent is the output effect; school leavers join the workforce after
+    /// DelayYears; Depreciation is the share of the workforce retiring each year.
+    /// </summary>
     public required StockParams Skills { get; init; }
+    /// <summary>The school system, built by effective education spending.</summary>
+    public required StockParams Schools { get; init; }
     public required StockParams Health { get; init; }
     public required StockParams Infrastructure { get; init; }
     public required StockParams FarmProductivity { get; init; }
@@ -109,6 +115,7 @@ public sealed record EconomyConfig
     public required BorrowingParams Borrowing { get; init; }
     public required RatingParams Rating { get; init; }
     public required ManagementParams Management { get; init; }
+    public required EducationParams Education { get; init; }
 
     /// <summary>Applies a named assumption set: scales the returns on skills, health, infrastructure, farm productivity and management.</summary>
     public EconomyConfig WithReturnsMultiplier(double m) => this with
@@ -140,6 +147,47 @@ public sealed record ManagementParams
     public required double Depreciation { get; init; }
     public required double AbsorptionGrowth { get; init; }
     public required double ExcessEffectiveness { get; init; }
+}
+
+/// <summary>Three school levels, nested: completing secondary includes basic, higher includes secondary.</summary>
+public sealed record LevelValues
+{
+    public required double Basic { get; init; }
+    public required double Secondary { get; init; }
+    public required double Higher { get; init; }
+}
+
+/// <summary>Per income fifth, lowest first, for each level.</summary>
+public sealed record LevelsByFifth
+{
+    public required IReadOnlyList<double> Basic { get; init; }
+    public required IReadOnlyList<double> Secondary { get; init; }
+    public required IReadOnlyList<double> Higher { get; init; }
+}
+
+/// <summary>
+/// Education. A person's skill is the sum of the values of the levels completed, times the quality of the
+/// schooling. Quality = (school stock per pupil) ^ spendingElasticity. Each fifth's coverage moves toward a
+/// target whose odds rise with quality (qualityElasticity) and with the fifth's own workforce skills against
+/// the start (parentElasticity: children of schooled parents stay longer). Wages by fifth scale with the
+/// fifth's skills against the start, to the power wageElasticity.
+/// </summary>
+public sealed record EducationParams
+{
+    public required LevelValues LevelSkill { get; init; }
+    public required LevelValues LevelYears { get; init; }
+    public required double SpendingElasticity { get; init; }
+    public required double QualityElasticity { get; init; }
+    public required double ParentElasticity { get; init; }
+    public required double CoverageSpeed { get; init; }
+    public required double WageElasticity { get; init; }
+}
+
+/// <summary>A country's schooling today: completion in the current generation, and attainment of the workforce.</summary>
+public sealed record EducationData
+{
+    public required LevelsByFifth Coverage { get; init; }
+    public required LevelsByFifth Workforce { get; init; }
 }
 
 public sealed record ParameterSet
@@ -333,6 +381,7 @@ public sealed record CountryPack
     public required int FirstElectionYear { get; init; }
     public required Policy Policy { get; init; }
     public required IncomeGroups Groups { get; init; }
+    public required EducationData Education { get; init; }
     /// <summary>Where each number came from. Free text, kept beside the numbers.</summary>
     public string? Sources { get; init; }
 }

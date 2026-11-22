@@ -22,7 +22,8 @@ public static class Fixtures
         return c with
         {
             Economy = c.Economy with { TrendProductivityGrowth = 0, Inflation = 0 },
-            Pack = c.Pack with { Debt = 0, WorkingAgeGrowth = 0, HouseholdGrowth = 0 },
+            // Workforce schooled like today's school leavers, so generations change nothing.
+            Pack = c.Pack with { Debt = 0, WorkingAgeGrowth = 0, HouseholdGrowth = 0, Education = c.Pack.Education with { Workforce = c.Pack.Education.Coverage } },
         };
     }
 

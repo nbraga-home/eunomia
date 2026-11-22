@@ -26,5 +26,20 @@
     "spendingShares":   [0.98, 0.95, 0.90, 0.85, 0.70],
     "progressivity":    [0.2, 0.5, 0.8, 1.1, 1.6]
   },
-  "sources": "Output, households and debt approximate 2024 figures from general knowledge, unchecked. Budget shares loosely follow spending by function (social protection, health, education, economic affairs, defence and order, general services) as shares of spending excluding interest. Tax rates are effective averages chosen so revenue is about 43% of output. Everything else is assumed."
+  // Schooling by income fifth, lowest first. "coverage" is the current generation (completion rates);
+  // "workforce" is the attainment of people at work today. Portugal's young are far better schooled than its
+  // older workers, so average skills rise on their own as generations replace each other.
+  "education": {
+    "coverage": {
+      "basic":     [0.95, 0.98, 0.99, 0.995, 0.995],
+      "secondary": [0.72, 0.84, 0.90, 0.95, 0.98],
+      "higher":    [0.22, 0.33, 0.45, 0.60, 0.78]
+    },
+    "workforce": {
+      "basic":     [0.65, 0.75, 0.82, 0.90, 0.97],
+      "secondary": [0.35, 0.48, 0.58, 0.72, 0.88],
+      "higher":    [0.08, 0.15, 0.25, 0.40, 0.65]
+    }
+  },
+  "sources": "Output, households and debt approximate 2024 figures from general knowledge, unchecked. Budget shares loosely follow spending by function (social protection, health, education, economic affairs, defence and order, general services) as shares of spending excluding interest. Tax rates are effective averages chosen so revenue is about 43% of output. Education: averages follow the general shape of Portuguese attainment by age (young cohorts mostly finish secondary school and almost half reach higher education; the working-age population as a whole far less), from general knowledge, unchecked; the split by income fifth is assumed. Everything else is assumed."
 }

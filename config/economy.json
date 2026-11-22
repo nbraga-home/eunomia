@@ -5,7 +5,10 @@
   "fiscalMultiplier": 0.5,
   "externalExposure": 0.35,
   "stocks": {
-    "skills":           { "exponent": 0.30, "delayYears": 12, "depreciation": 0.025 },
+    // Workforce skills: output exponent; school leavers join the workforce after delayYears; a share retires each year.
+    "skills":           { "exponent": 0.30, "delayYears": 9,  "depreciation": 0.025 },
+    // The school system, built by effective education spending.
+    "schools":          { "delayYears": 3, "depreciation": 0.10 },
     "health":           { "exponent": 0.15, "delayYears": 3,  "depreciation": 0.05 },
     "infrastructure":   { "exponent": 0.10, "delayYears": 5,  "depreciation": 0.04 },
     "farmProductivity": { "exponent": 0.30, "delayYears": 2,  "depreciation": 0.05 },
@@ -25,6 +28,18 @@
     "depreciation": 0.10,
     "absorptionGrowth": 0.10,
     "excessEffectiveness": 0.2
+  },
+  // Education (all assumptions). Skill of a school leaver = quality x (value of levels completed).
+  // Quality = (school stock per pupil) ^ spendingElasticity: doubling spending per pupil raises learning about 40%.
+  // Coverage odds rise with quality and with the parents' schooling (the fifth's workforce skills against its start).
+  "education": {
+    "levelSkill": { "basic": 1.0, "secondary": 0.35, "higher": 0.45 },
+    "levelYears": { "basic": 9, "secondary": 3, "higher": 4 },
+    "spendingElasticity": 0.5,
+    "qualityElasticity": 0.5,
+    "parentElasticity": 1.0,
+    "coverageSpeed": 0.25,
+    "wageElasticity": 1.0
   },
   "loss":       { "base": 0.01, "stabilityExponent": 0.5, "max": 0.5 },
   "leakage":    { "base": 0.05, "capacityExponent": 1.0, "max": 0.5 },

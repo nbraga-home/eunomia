@@ -35,7 +35,9 @@ public sealed class Simulation
     private double _effectiveRate;
     private Policy _enacted;
     private Flows _previous;
-    private readonly Stock _skills, _health, _infrastructure, _farm, _capacity, _stability, _capital;
+    private readonly Stock _health, _infrastructure, _farm, _capacity, _stability, _capital;
+    private readonly EducationSystem _education;
+    private double[] _wageWeights;   // follows each fifth's skills
     private readonly Dictionary<BudgetLine, Sector> _sectors;
     private readonly Policy _startPolicy;
     private readonly YearRecord _opening;
@@ -52,6 +54,7 @@ public sealed class Simulation
         _startPolicy = _pack.Policy with { ManagementShares = startManagement };
         _enacted = _startPolicy;
         _households = _pack.Households;
+        _wageWeights = _pack.Groups.WageWeights.ToArray();
         _debt = _pack.Debt;
         _effectiveRate = _pack.EffectiveRate;
         _openingWorld = WorldGenerator.Flat(config.World, 1)[0] with { Year = -1 };
@@ -67,7 +70,7 @@ public sealed class Simulation
 
         // Each stock is calibrated on the front-line money that builds it at the start (efficiency 1).
         double Baseline(BudgetLine line) => opening.Delivered[(int)line] * (1 - startManagement[line]);
-        _skills = new Stock(_e.Stocks.Skills, Baseline(BudgetLine.Education));
+        _education = new EducationSystem(_e.Education, _e.Stocks.Skills, _e.Stocks.Schools, _pack.Education, Baseline(BudgetLine.Education));
         _health = new Stock(_e.Stocks.Health, Baseline(BudgetLine.Health));
         _infrastructure = new Stock(_e.Stocks.Infrastructure, Baseline(BudgetLine.Infrastructure));
         _farm = new Stock(_e.Stocks.FarmProductivity, Baseline(BudgetLine.Agriculture));
@@ -167,9 +170,11 @@ public sealed class Simulation
             foreach (var sector in _sectors.Values)
             {
                 var split = sector.Advance(flows.Delivered[(int)sector.Line], _enacted.ManagementShares![sector.Line]);
-                StockFor(sector.Line).Advance(split.Effective);
+                if (sector.Line == BudgetLine.Education) _education.Advance(split.Effective, cohortSize: _labour);
+                else StockFor(sector.Line).Advance(split.Effective);
             }
             _capital.Advance(flows.Investment);
+            _wageWeights = _education.WageWeights(_pack.Groups.WageWeights);
 
             // 6. Trend and people
             _productivity *= 1 + _e.TrendProductivityGrowth;
@@ -287,7 +292,7 @@ public sealed class Simulation
 
     private Stock StockFor(BudgetLine line) => line switch
     {
-        BudgetLine.Education => _skills,
+        BudgetLine.Education => _education.Schools,
         BudgetLine.Health => _health,
         BudgetLine.Infrastructure => _infrastructure,
         BudgetLine.Agriculture => _farm,
@@ -298,7 +303,7 @@ public sealed class Simulation
 
     private (string Name, Stock Stock, BudgetLine Line)[] CheckedStocks =>
     [
-        ("skills", _skills, BudgetLine.Education),
+        ("schools", _education.Schools, BudgetLine.Education),
         ("health", _health, BudgetLine.Health),
         ("infrastructure", _infrastructure, BudgetLine.Infrastructure),
         ("stateCapacity", _capacity, BudgetLine.Administration),
@@ -365,7 +370,7 @@ public sealed class Simulation
         double farm = (1 - _pack.FarmShare) + _pack.FarmShare * Math.Pow(_farm?.Value ?? 1, s.FarmProductivity.Exponent) * world.FarmOutput;
         double potential = _productivity
             * Math.Pow(_capital?.Value ?? 1, alpha)
-            * Math.Pow(_labour * Math.Pow(_skills?.Value ?? 1, s.Skills.Exponent) * Math.Pow(_health?.Value ?? 1, s.Health.Exponent), 1 - alpha)
+            * Math.Pow(_labour * Math.Pow(_education?.SkillsIndex ?? 1, s.Skills.Exponent) * Math.Pow(_health?.Value ?? 1, s.Health.Exponent), 1 - alpha)
             * Math.Pow(_infrastructure?.Value ?? 1, s.Infrastructure.Exponent)
             * farm;
         double impulse = previous is null ? 0 : (purchases - previous.Purchases) / previous.Output;
@@ -382,13 +387,14 @@ public sealed class Simulation
         // Households, by fifth
         var g = _pack.Groups;
         double incomeTax = IncomeTax(policy.Taxes.Income, wages, collection);
-        double progressive = Enumerable.Range(0, Groups).Sum(i => g.WageWeights[i] * g.Progressivity[i]);
+        var wageWeights = _wageWeights;
+        double progressive = Enumerable.Range(0, Groups).Sum(i => wageWeights[i] * g.Progressivity[i]);
         var disposable = new double[Groups];
         double consumption = 0;
         for (int i = 0; i < Groups; i++)
         {
-            disposable[i] = wages * g.WageWeights[i]
-                - incomeTax * g.WageWeights[i] * g.Progressivity[i] / progressive
+            disposable[i] = wages * wageWeights[i]
+                - incomeTax * wageWeights[i] * g.Progressivity[i] / progressive
                 + dividends * g.OwnershipWeights[i]
                 + transfers * g.TransferWeights[i];
             consumption += g.SpendingShares[i] * disposable[i];
@@ -513,7 +519,7 @@ public sealed class Simulation
         var f = _rules.Floors;
         var stocks = new (string Name, Stock Stock)[]
         {
-            ("skills", _skills), ("health", _health), ("infrastructure", _infrastructure), ("stateCapacity", _capacity),
+            ("schools", _education.Schools), ("health", _health), ("infrastructure", _infrastructure), ("stateCapacity", _capacity),
         };
         foreach (var (name, stock) in stocks)
         {
@@ -564,7 +570,12 @@ public sealed class Simulation
         LeakageRate = f.LeakageRate,
         CollectionRate = f.CollectionRate,
         GroupIncome = f.GroupIncome,
-        Skills = _skills?.Value ?? 1,
+        Skills = _education?.SkillsIndex ?? 1,
+        Schools = _education?.Schools.Value ?? 1,
+        SchoolQuality = _education?.Quality ?? 1,
+        SkillsByFifth = _education?.SkillsByFifth ?? [1, 1, 1, 1, 1],
+        SecondaryByFifth = _education?.SecondaryCoverage.ToArray() ?? _pack.Education.Coverage.Secondary.ToArray(),
+        HigherByFifth = _education?.HigherCoverage.ToArray() ?? _pack.Education.Coverage.Higher.ToArray(),
         Health = _health?.Value ?? 1,
         Infrastructure = _infrastructure?.Value ?? 1,
         FarmProductivity = _farm?.Value ?? 1,
