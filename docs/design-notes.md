@@ -348,7 +348,7 @@ These are left out of version one on purpose.
 - **External actions.** Accepting or refusing loans and aid with conditions, trade proposals, requests for assistance. Use of force exists as the veto test and needs all three signatures.
 - **Imperfect information.** Figures that arrive late, carry error and get revised.
 - **Separate information per branch.** The judiciary gets its own audit data and citizen complaints.
-- **Approval with consequences.** Strikes and unrest when it falls.
+- **Approval with consequences.** Strikes and unrest when it falls. Resistance is to policies, never to the AI as such, and applies identically to every occupant, behind a switch (see Sectors and Levers).
 - **Mechanical veto.** An order without the required signatures cannot be issued at all.
 - **Large countries.** These need a fully simulated world, because real numbers stop being valid once a large country departs from reality.
 - **Live shadow mode.** A small country run alongside reality on a live data feed.

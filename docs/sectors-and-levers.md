@@ -96,7 +96,7 @@ Effective spending per pupil (with diminishing returns), the sector's management
 
 | Regime | Options | Mechanism |
 | --- | --- | --- |
-| **Provision** | Public; mixed (public funding, private schools allowed, with vouchers); private with grants | Private provision has its own efficiency, below or above public across the named sets because the evidence is mixed. In mixed and private systems families can top up, which sorts pupils by income |
+| **Provision** | Public; mixed (public funding, private schools allowed, with vouchers); private with grants | Two separate effects. **Efficiency** (learning per euro against public schools) spans 0.85 to 1.15 across the named sets, central 1.0, because the evidence is mixed. **Sorting**: in mixed and private systems families top up and schools select pupils, which changes who learns more than how much in total |
 | **University fees** | Free; flat fee; fee scaled by income | Fees raise revenue and lower coverage, most for groups most sensitive to price. Income-scaled fees need means-testing |
 | **Means-testing** | Universal support; support tested by income | Testing aims money at lower fifths, but costs administration and loses those who never apply. Take-up rises with state capacity |
 | **Standards** | Comprehensive; selective | Selective systems teach more to those who stay, and keep fewer of the groups with lower propensity. Comprehensive systems do the reverse |
@@ -139,7 +139,7 @@ Sector depth is what gives ministers something to do. A minister's levers are th
 
 1. **Template core for every line:** management quality and the absorption limit, at national level. Rerun the returns table; the stock-size artefact should disappear.
 2. **Education outputs:** skills by income fifth, generations, wages by group, coverage and quality.
-3. **Education regimes and constitution options,** then the regime search (no model calls).
+3. **Education regimes and constitution options,** the policy-resistance switch, then the regime search (no model calls).
 4. **Health** on the same template.
 5. **Regions,** with the map: distribution by region and fifth, and the health regions.
 6. **EU funds,** and the Ministry of Economy's levers.
@@ -151,8 +151,8 @@ Each step ends with tests, a rerun of the returns table and the pairs, and findi
 
 - **Intergenerational transmission: yes.** Built into what drives coverage (Nov 22, 2026).
 - **School places: the absorption limit is enough.** No separate model of places (Nov 22, 2026).
+- **Private provision: two effects, not one.** Efficiency (learning per euro against public) spans 0.85 to 1.15 across the named sets with central 1.0, so no set leans either way by default; sorting (top-ups and pupil selection) is modelled separately and mainly shifts who learns. The range is an assumption, recorded as such (Nov 22, 2026).
+- **Resistance is to policies, never to the AI.** Whether people would accept an AI government is outside the question. But losers from a change push back whoever governs, and the status-quo script already behaves as if constrained by that, so leaving it out would hand the AI a free advantage. Resistance therefore applies identically to every occupant: a regime change or cut that hits a group hard and fast triggers strikes or protest, costing output in that sector for a while. It sits behind a switch, off by default, so results can be compared with and without friction (Nov 22, 2026).
 
-## Open questions
+No open questions remain in this document.
 
-- **Private efficiency.** The evidence is mixed, so the named sets should span it widely. How widely?
-- **Resistance to change.** Approval has no effect yet. Later, regime changes should meet resistance (strikes, unrest), which makes their cost political as well as administrative.
