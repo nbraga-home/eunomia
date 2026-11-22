@@ -169,20 +169,25 @@ public static class StateReport
           "plannedDeficit": 0.0,
           "budgetShares": { "health": 0.165, "education": 0.10, "infrastructure": 0.14, "agriculture": 0.012,
                             "socialTransfers": 0.42, "security": 0.057, "administration": 0.106 },
-          "managementShares": { "health": 0.05, "education": 0.05, "infrastructure": 0.05, "agriculture": 0.05,
-                                "security": 0.05, "administration": 0.05 },
-          "educationRegime": { "provision": "public", "universityFees": "flat", "support": "tested",
-                               "standards": "comprehensive", "earmark": false },
           "rationale": "{{rationaleHint}}",
           "expectations": "What you expect to happen, and by when."
         }
         {{Units}}
+        {{OptionalLevers}}
         """;
 
     /// <summary>Most failed replies in the first runs were unit slips (42 for 42%).</summary>
     public const string Units =
-        "All rates and shares are decimals: 0.42 means 42%, and a planned deficit of -0.005 means a surplus of half a percent of output. " +
-        "\"managementShares\" and \"educationRegime\" may be left out to keep what is in force.";
+        "All rates and shares are decimals: 0.42 means 42%, and a planned deficit of -0.005 means a surplus of half a percent of output.";
+
+    /// <summary>
+    /// The optional levers are described, not shown with values: an example holding today's values was copied
+    /// verbatim in the first run with these levers (build plan, tenth look).
+    /// </summary>
+    public const string OptionalLevers =
+        "Two more fields are optional; leave either out to keep what is in force. " +
+        "To set management shares, add \"managementShares\" with all six of health, education, infrastructure, agriculture, security and administration, each a decimal share of that line. " +
+        "To set the education regime, add \"educationRegime\" with \"provision\", \"universityFees\", \"support\" and \"standards\", each one of the options in the Education regime section, and \"earmark\" as true or false.";
 
     /// <summary>A proposal as the branches see it: the numbers, and what moves against the policy in force.</summary>
     public static string DescribeRevision(string id, Policy p, CheckResult check, Policy inForce)
