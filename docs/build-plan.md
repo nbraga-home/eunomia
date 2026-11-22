@@ -64,6 +64,28 @@ Each step ends green (builds, tests pass) and is committed.
 6. A crude map viewer.
 7. Realism, only where steps 4 and 5 showed it was missing.
 
+## Next realism step: management quality (planned Nov 22, 2026, not built)
+
+**The gap.** The toy is almost all budget allocation: a euro for health does the same work whether the health system is well or badly run. The only management idea is one national state-capacity index, which acts on leakage, tax collection and the reallocation limit. In real public systems, outcomes are often limited by management (scheduling, staffing, procurement, information systems, approvals) more than by money or medical competence.
+
+**Three levels, and what we do with each:**
+
+| Level | What it means | Plan |
+| --- | --- | --- |
+| 1. National sector efficiency | Health, education and infrastructure each get their own management-quality index | **Build next.** About two formulas per sector |
+| 2. Health regions | Each region has its own management quality and needs; the government divides the health budget among regions | **Build with regions and the map** |
+| 3. Hospitals and staff | Individual hospitals, doctors, waiting lists | **Never.** No data to tune it, and it would not change the answer |
+
+**Level 1 mechanics:**
+
+- **Effective spending** = money × the sector's management quality. Only effective spending fills the sector's stock.
+- **Absorption limit.** When a sector's budget grows faster than its management can handle, most of the extra is wasted. This also fixes the stock-size artefact from the first look, where a tiny line (agriculture) could be tripled for outsized returns.
+- **Management quality** improves slowly when part of a sector's money goes to running it, and decays when that is neglected. The government decides that part, so it faces a real choice: more doctors now, or fix how hospitals are run first.
+
+**Level 2 notes.** Portugal's health service was organised in five mainland health regions, and since 2024 runs through about 39 local health units that join hospitals and primary care; the Azores and Madeira run their own systems. The former health regions line up roughly with the nine NUTS II regions planned for the map. With regions, the legislature's "fair spread" mandate becomes concrete, and a map mode can show how well each region's health system is run.
+
+**Caveat.** Management quality is hard to measure. There is regional data on outputs (waiting times, doctors and beds per person, deaths timely care could have prevented), but no reliable figure for how well a region is managed. Its strength will be an assumption, tested across the named parameter sets and recorded as assumed in the calibration ledger.
+
 ## First look (step 4, Nov 21, 2026, unvalidated)
 
 `eunomia returns`: an extra 1% of output a year, borrowed, on each line, against frozen policy in a calm world (central set):
