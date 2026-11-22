@@ -255,3 +255,18 @@ The regime search now ranks clean regimes by wins under the rule, then by final 
 **What it means:** selective schools stop winning under central assumptions, because the median gain they bring is paid for by the poorest fifth. Universal student support still appears in every set's best regime. Public provision now wins under both central and low returns, with income-scaled fees.
 
 **Smoke: single AI (Haiku) with the new levers, world 1, central set** (`runs/smoke-regimes-singleai-haiku-s1`, 40 calls, 15 minutes). The AI never changed the education regime or a management share: it restated today's regime and 5% management every year. It did weigh them, and its reasons were that a change uses up the year's capacity for change, that sector efficiency already read about 1.00, and, late on, that a new regime would not pay off before the end. It breached the EU debt rule in year 17 (debt crossed 60% of output in a recession while it ran a 2.3% deficit), the same weak spot as the earlier runs. Even clean, it would not have won: its poorest fifth ends lower than the technocrat's (51,458 against 53,401), so the guard would have blocked it. One possible anchor: the reply example in the prompt shows exactly today's regime and 5% management shares.
+
+**Second smoke, with the optional levers described instead of shown** (world 1, central set, 40 calls per model; `runs/smoke2-singleai-haiku-s1`, `runs/smoke2-singleai-sonnet-s1`).
+
+| | Haiku | Sonnet | Technocrat | Status quo |
+| --- | --- | --- | --- | --- |
+| Floors | EU debt rule broken, years 17 and 18 | Clean | Clean | Clean |
+| Final median | 66,084 | 67,316 | 64,240 | 64,123 |
+| Poorest fifth, final | 52,909 | 51,419 | 53,401 | 54,853 |
+| Final debt | 49% | 25% | | |
+| Management shares | never touched | 5% to 13-15% over years 3 to 8 | | |
+| Education regime | never touched | never touched | | |
+| Result against technocrat | loss | trade-off (the guard) | | |
+| Time | 12 minutes | 7 minutes | | |
+
+Without the example values, Haiku leaves the optional fields out entirely; it still never changes them. Sonnet uses the management lever with reasons ("so the management index keeps building"). Neither model ever changes the education regime: both call it a use of scarce capacity for change, though a change costs 1 point of a yearly allowance near 5. So the status-quo regime is not an artefact of the example: two models keep it with the example gone. Sonnet cut income tax from 42% to 29% over the last four years; the richest fifth rose from about 83,000 to 111,000 while the poorest fell from about 53,000 to 51,400, and the guard turned what would have been a win into a trade-off. This is the end-game gaming the guard was meant to catch.
