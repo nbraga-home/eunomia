@@ -48,6 +48,7 @@ public static class StateReport
         sb.AppendLine();
         sb.AppendLine("## How you are judged");
         sb.AppendLine($"Real disposable income of the median household in year {ctx.HorizonYears}, and in the worst year along the way. A run that keeps every floor beats any run that breaks one.");
+        sb.AppendLine("You are compared with a typical government facing the same world. A higher median does not count if the poorest fifth ends poorer than they would have under it. You cannot see that government; the poorest fifth's income against the median's, below, shows whether your gains are reaching them.");
         sb.AppendLine();
 
         var w = ctx.World;
@@ -63,6 +64,8 @@ public static class StateReport
         sb.AppendLine($"- Credit rating {last.Rating}, outlook {last.Outlook.ToString().ToLowerInvariant()}{(last.RatingAction is null ? "" : $"; latest announcement: {last.RatingAction}")}.");
         sb.AppendLine($"- Borrowing rate on new debt {P(last.MarketRate)}; average rate on all debt {P(last.EffectiveRate)}.");
         sb.AppendLine($"- Leakage {P(last.LeakageRate)} of spending; tax collection {P(last.CollectionRate)}.");
+        var opening = ctx.History[0];
+        sb.AppendLine($"- Poorest fifth's income as a share of the median household's: {P(last.GroupIncome[0] / last.MedianIncome)} (at the start: {P(opening.GroupIncome[0] / opening.MedianIncome)}).");
         sb.AppendLine();
 
         var enacted = ctx.Check(ctx.Enacted);

@@ -76,4 +76,14 @@ public class EducationTests
         Assert.Contains("| poorest |", prompt);
         Assert.Contains("schools, health, infrastructure and state capacity", prompt);
     }
+
+    [Fact]
+    public void TheReportExplainsTheGuardAndShowsItsGauge()
+    {
+        string? prompt = null;
+        var ai = new SingleAi(new ScriptedModel(p => { prompt ??= p; return "no json"; }), "mandate");
+        Fixtures.RunFlat(C with { Government = C.Government with { HorizonYears = 1 } }, ai);
+        Assert.Contains("compared with a typical government facing the same world", prompt);
+        Assert.Contains("Poorest fifth's income as a share of the median household's:", prompt);
+    }
 }

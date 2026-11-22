@@ -90,7 +90,7 @@ Each branch owns a different time horizon: the executive the future, the legisla
 
 **Executive**
 
-> Your mandate is the long-run prosperity of the people: raise the income of the median household by year 40. A gain for the median that leaves the poorest fifth worse off in the final year does not count. You propose the budget, taxes and borrowing. For each change, state its expected effect and its delay.
+> Your mandate is the long-run prosperity of the people: raise the income of the median household by year 40. A higher median does not count if the poorest fifth ends poorer than they would have under a typical government facing the same world. You propose the budget, taxes and borrowing. For each change, state its expected effect and its delay.
 
 **Legislature**
 
