@@ -287,3 +287,21 @@ Single AI, Sonnet, worlds 1 to 10, central set; 400 calls, 22 minutes three at a
 **What Sonnet did.** Paid debt down, raised management shares (to 7% to 25% of each line, every world), and then cut income tax steadily: from 42% to between 5% and 32% by the final year, with the cuts under way by year 20 in six worlds. Transfers kept their budget share (cut to 32% to 37% in two worlds), so they shrank in euros as the budget shrank. The richest fifths gained most. It never proposed an education regime change in any world.
 
 **Why the guard and the AI disagree.** The AI reads "a gain that leaves the poorest fifth worse off does not count" as worse off than before: its reasoning checks the poorest fifth against its starting income and last year's. The score compares it with the rival government in the same world, which the AI cannot see. With growth, the poorest fifth ends 10% to 65% above where it started in every world, so by its own reading the AI never breaks the guard, while the score says it loses 2% to 26% to the technocrat.
+
+## Twelfth look: Sonnet told what the guard compares against (Nov 22, 2026, unvalidated)
+
+The mandates and the report's "How you are judged" now say the comparison is with a typical government in the same world, and the report shows the poorest fifth's income as a share of the median's, now and at the start (75% at the start). Single AI, Sonnet, worlds 1 to 10, central set; 400 calls, 25 minutes three at a time, one retry (`runs/singleai-sonnet-guard-s1` to `s10`).
+
+| | Eleventh look (guard not explained) | Twelfth look (guard explained, gauge shown) |
+| --- | --- | --- |
+| Floors | clean 10 of 10 | clean 10 of 10 |
+| Final median against technocrat | +1.6% to +8.7% | +1.4% to +7.3% |
+| Poorest fifth against technocrat | -2% to -26% | -6% to +8% |
+| Poorest fifth's share of the median, final | 58% to 81% | 74% to 85% (at or above the start in 9 of 10) |
+| Income tax, final | 5% to 32% | 24% to 42% |
+| Against technocrat (central / low / high) | 0 W, 10 T / 0 W, 2 L, 8 T / 0 W, 10 T | 2 W, 8 T / 3 W, 7 T / 2 W, 8 T |
+| Against status quo | 10 T | 1 W, 9 T |
+
+Summed over the ten worlds, the poorest fifth ends 14% richer than in the eleventh look, at a cost of 0.3% of the median. These are the first wins for an AI government under the guard, and it loses no world. Sonnet watched the gauge and said so in its expectations ("the poorest fifth's share of the median near 77%"), cut income tax far less, and in world 8 cut consumption tax instead (24% to 11.5%), reasoning that income and consumption taxes "weigh most on the poorest fifth"; that world is its largest win (median +7.3%, poorest +8.4%). It still never changed the education regime: its one regime entry restated today's.
+
+The remaining trade-offs are narrow: in 8 worlds the poorest fifth ends 1% to 6% below the technocrat's while the median is higher.

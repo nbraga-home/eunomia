@@ -45,7 +45,7 @@ dotnet run --project src/Eunomia.Cli -- compare --runs "runs/singleai-haiku-s{se
 - `tests/Eunomia.Tests`: 113 tests, all passing.
 - `config/`: economy, world, government (floors, constitution, resistance switch), parameter sets, baseline scripts, models, `mandates/`.
 - `packs/portugal/`: `country.json` (data and starting policy), `ministries.json` (display only).
-- `runs/`: output, ignored by git. The only copies of the AI runs live here: `singleai-haiku-s1` to `s10` (before the new levers), `singleai-sonnet-s1` to `s10` (with them, eleventh look), `threebranch-haiku-s1`, `smoke-*`, `smoke2-*`.
+- `runs/`: output, ignored by git. The only copies of the AI runs live here: `singleai-haiku-s1` to `s10` (before the new levers), `singleai-sonnet-s1` to `s10` (eleventh look), `singleai-sonnet-guard-s1` to `s10` (twelfth look), `threebranch-haiku-s1`, `smoke-*`, `smoke2-*`.
 
 ## Conventions that matter
 
@@ -58,7 +58,7 @@ dotnet run --project src/Eunomia.Cli -- compare --runs "runs/singleai-haiku-s{se
 
 Done: toy steps 1 to 5; rating agency and EU fiscal rules; 40-year horizon; single AI and three branches; committed-spending gauge; ministry mapping; sectors-and-levers steps 1 to 3 (management quality and absorption; education by income fifth across generations; education regimes, the constitution, the right-to-education floor, the resistance switch, the regime search).
 
-The Haiku runs in `runs/` predate steps 1 to 3. The Sonnet batch (eleventh look) had the new levers: it used management shares, never an education regime, and lost every world to the poorest-fifth guard through steady income tax cuts.
+The Haiku runs in `runs/` predate steps 1 to 3. Sonnet with the new levers (eleventh look) used management shares, never an education regime, and lost every world to the poorest-fifth guard through steady income tax cuts. Told what the guard compares against and shown a gauge (twelfth look), it won 2 worlds against the technocrat, traded off 8, lost none.
 
 ## Open decisions for the owner
 
