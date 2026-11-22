@@ -83,7 +83,10 @@ Coverage for each level and group rises with:
 - a lower net cost to families (fees minus grants);
 - higher quality, which raises what schooling is worth;
 - access, meaning places available and, once regions exist, distance;
-- the group's own propensity, taken from data and never treated as the state's achievement.
+- the group's own propensity, taken from data and never treated as the state's achievement;
+- **the parents' schooling:** each group's propensity rises with its own past skills, because children of schooled parents tend to stay in school longer. This gives the 40-year horizon its own momentum: a generation schooled today raises the next one's demand for schooling. It also amplifies every other assumption, so its strength is spanned by the named sets.
+
+Places are not modelled separately: the absorption limit already stops a school system from growing faster than it can be run.
 
 ### What drives quality
 
@@ -144,9 +147,12 @@ Sector depth is what gives ministers something to do. A minister's levers are th
 
 Each step ends with tests, a rerun of the returns table and the pairs, and findings recorded in the build plan.
 
+## Decided
+
+- **Intergenerational transmission: yes.** Built into what drives coverage (Nov 22, 2026).
+- **School places: the absorption limit is enough.** No separate model of places (Nov 22, 2026).
+
 ## Open questions
 
-- **Intergenerational transmission.** Children of schooled parents tend to stay in school longer. Should each group's propensity rise with its own past skills? It would give the 40-year horizon real dynamics, and it is well documented, but it also amplifies every other assumption.
 - **Private efficiency.** The evidence is mixed, so the named sets should span it widely. How widely?
 - **Resistance to change.** Approval has no effect yet. Later, regime changes should meet resistance (strikes, unrest), which makes their cost political as well as administrative.
-- **Places as a constraint.** Should places be built by spending with a delay (new schools, new teachers), or is the absorption limit enough?

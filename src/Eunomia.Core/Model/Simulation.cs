@@ -109,6 +109,7 @@ public sealed class Simulation
                 StartingPolicy = _pack.Policy,
                 ElectionYear = year >= _pack.FirstElectionYear && (year - _pack.FirstElectionYear) % 4 == 0,
                 ReallocationAllowance = _rules.ReallocationAllowance * _capacity.Value,
+                Commitments = Commitments(null),
                 Rules = _rules,
                 Check = Check,
             };
@@ -220,15 +221,49 @@ public sealed class Simulation
         if (envelope <= 0)
             return new CheckResult { Errors = [$"The envelope is {envelope:E3}: revenue plus borrowing does not cover interest."] };
 
+        var appropriations = shares.Select(s => s * envelope).ToList();
         return new CheckResult
         {
             Errors = [],
             Feasible = feasible,
             Envelope = envelope,
-            Appropriations = shares.Select(s => s * envelope).ToList(),
+            Appropriations = appropriations,
             Scaled = scaled,
+            Commitments = Commitments(appropriations),
         };
     }
+
+    /// <summary>
+    /// The end-state gauge for the four stocks the final-year floor checks. With appropriations, it shows the
+    /// pipelines after this year's delivered spending enters them; without, as they stand now.
+    /// </summary>
+    private IReadOnlyList<Commitment> Commitments(IReadOnlyList<double>? appropriations)
+    {
+        if (!_rules.Floors.EndStatePipelines.Enabled) return [];
+        double threshold = _rules.Floors.EndStateStocks.Threshold;
+        double deliveredShare = 1 - Leakage(_capacity.Value);
+        var list = new List<Commitment>();
+        foreach (var (name, stock, line) in CheckedStocks)
+        {
+            if (!stock.Active || stock.Delay == 0) continue;
+            double pipeline = appropriations is null
+                ? stock.PipelineAverage
+                : stock.PipelineAverageAfter(appropriations[(int)line] * deliveredShare);
+            list.Add(new Commitment(name, stock.Value, pipeline / stock.HoldingAmountAt(threshold)));
+        }
+        return list;
+    }
+
+    private (string Name, Stock Stock, BudgetLine Line)[] CheckedStocks =>
+    [
+        ("skills", _skills, BudgetLine.Education),
+        ("health", _health, BudgetLine.Health),
+        ("infrastructure", _infrastructure, BudgetLine.Infrastructure),
+        ("stateCapacity", _capacity, BudgetLine.Administration),
+    ];
+
+    private double Leakage(double capacity) =>
+        Math.Clamp(_e.Leakage.Base * Math.Pow(capacity, -_e.Leakage.CapacityExponent), 0, _e.Leakage.Max);
 
     /// <summary>Money for the seven lines: projected revenue at the new rates on last year's bases, plus planned borrowing, minus interest due.</summary>
     private double Envelope(Policy p) =>
@@ -268,7 +303,7 @@ public sealed class Simulation
     private Flows Evaluate(Policy policy, FeedRow world, double envelope, Flows? previous)
     {
         double capacity = _capacity?.Value ?? 1; // stocks do not exist yet while the opening year is solved
-        double leakage = Math.Clamp(_e.Leakage.Base * Math.Pow(capacity, -_e.Leakage.CapacityExponent), 0, _e.Leakage.Max);
+        double leakage = Leakage(capacity);
         double collection = Collection(capacity);
 
         // Public spending: paid, part leaked, the rest delivered.

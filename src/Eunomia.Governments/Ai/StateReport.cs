@@ -72,6 +72,22 @@ public static class StateReport
         }
         sb.AppendLine();
 
+        if (ctx.Commitments.Count > 0)
+        {
+            var fl = ctx.Rules.Floors;
+            string threshold = fl.EndStateStocks.Threshold.ToString("0.00", Inv);
+            sb.AppendLine("## Committed spending (for the final-year floor)");
+            sb.AppendLine($"Spending reaches these indices with a delay, so money already committed decides where they head. In the final year each index must be at least {threshold}, and its committed spending at least {P0(fl.EndStatePipelines.Share)}% of what keeps it at {threshold} in the long run.");
+            sb.AppendLine("| Index | Now | Committed now | Committed after this year's budget, at the policy in force |");
+            sb.AppendLine("|---|---|---|---|");
+            foreach (var c in ctx.Commitments)
+            {
+                var after = enacted.Commitments.FirstOrDefault(a => a.Stock == c.Stock);
+                sb.AppendLine($"| {StockLabel(c.Stock)} | {N(c.Index)} | {P0(c.Committed)}% | {(after is null ? "-" : P0(after.Committed) + "%")} |");
+            }
+            sb.AppendLine();
+        }
+
         sb.AppendLine("## History (opening year first; money in constant euros of the base year)");
         sb.AppendLine("| Year | Growth | Median € | Poorest fifth € | Richest fifth € | Prices | Revenue | Spending | Interest | Deficit | Debt | Rate | Rating | Skills | Health | Infra | Farm | Capacity | Stability | Capital | Tax I/C/V | Plan | Shares H/E/I/A/T/S/Ad | Events |");
         sb.AppendLine("|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|");
@@ -130,6 +146,9 @@ public static class StateReport
             string change = Math.Abs(delta) < 0.00005 ? "" : $" ({(delta > 0 ? "+" : "−")}{Math.Abs(delta * 100).ToString("0.00", Inv)} pts)";
             sb.AppendLine($"  - {Label(line)}: share {p.BudgetShares[line].ToString("0.0000", Inv)}{change}, {Bn(check.Appropriations[(int)line])}");
         }
+        if (check.Commitments.Count > 0)
+            sb.AppendLine("- Committed spending after this budget: " +
+                string.Join(", ", check.Commitments.Select(c => $"{StockLabel(c.Stock)} {P0(c.Committed)}%")) + ".");
         return sb.ToString();
     }
 
@@ -137,6 +156,12 @@ public static class StateReport
     {
         BudgetLine.SocialTransfers => "social transfers",
         _ => line.ToString().ToLowerInvariant(),
+    };
+
+    private static string StockLabel(string stock) => stock switch
+    {
+        "stateCapacity" => "state capacity",
+        _ => stock,
     };
 
     private static string P(double x) => (x * 100).ToString("0.0", Inv) + "%";

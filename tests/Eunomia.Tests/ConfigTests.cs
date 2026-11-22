@@ -47,3 +47,32 @@ public class ConfigTests
         finally { File.Delete(path); }
     }
 }
+
+public class MinistryMapTests
+{
+    private static MinistryMap Map => ConfigLoader.LoadFile<MinistryMap>(Path.Combine(Repo.Portugal, "ministries.json"));
+
+    [Fact]
+    public void EveryPortfolioIsABudgetLine()
+    {
+        var lines = BudgetLines.All.Select(l => l.ToString()).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        Assert.All(Map.Portfolios.Keys, k => Assert.Contains(k, lines));
+        Assert.Equal(BudgetLines.Count, Map.Portfolios.Count);
+    }
+
+    [Fact]
+    public void EachOfTheSixteenMinistriesAppearsExactlyOnce()
+    {
+        var all = Map.Portfolios.Values.SelectMany(m => m).Concat(Map.ExecutiveDesk).Concat(Map.Parked.Keys).ToList();
+        Assert.Equal(16, all.Count);
+        Assert.Equal(all.Count, all.Distinct().Count());
+    }
+
+    [Fact]
+    public void MinistriesFindTheirLine()
+    {
+        Assert.Equal(BudgetLine.Education, Map.LineOf("Culture, Youth and Sports"));
+        Assert.Equal(BudgetLine.Administration, Map.LineOf("Justice"));
+        Assert.Null(Map.LineOf("Finance"));
+    }
+}

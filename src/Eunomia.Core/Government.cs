@@ -35,10 +35,19 @@ public sealed record MeetingContext
     public required bool ElectionYear { get; init; }
     /// <summary>Share of the budget that can move between lines this year (grows with state capacity).</summary>
     public required double ReallocationAllowance { get; init; }
+    /// <summary>The end-state gauge now, before this year's budget. Empty when the pipeline floor is off.</summary>
+    public required IReadOnlyList<Commitment> Commitments { get; init; }
     public required GovernmentConfig Rules { get; init; }
     /// <summary>Validates a proposal and returns its feasible form, envelope and appropriations. May be called freely.</summary>
     public required Func<Policy, CheckResult> Check { get; init; }
 }
+
+/// <summary>
+/// The end-state gauge for one stock: its index now, and the spending already committed to it as a share of
+/// what keeps it at the final-year threshold in the long run. The floor needs at least the configured share
+/// (0.95) in the final year. A derived figure, like a budget office would publish; it reveals no parameters.
+/// </summary>
+public sealed record Commitment(string Stock, double Index, double Committed);
 
 public sealed record CheckResult
 {
@@ -49,6 +58,8 @@ public sealed record CheckResult
     public IReadOnlyList<double> Appropriations { get; init; } = [];
     /// <summary>True when the share changes were scaled down to fit the allowance.</summary>
     public bool Scaled { get; init; }
+    /// <summary>The end-state gauge after this year's budget, if this proposal is enacted.</summary>
+    public IReadOnlyList<Commitment> Commitments { get; init; } = [];
     public bool Ok => Errors.Count == 0;
 }
 

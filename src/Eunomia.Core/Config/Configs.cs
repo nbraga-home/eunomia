@@ -267,6 +267,31 @@ public sealed record IncomeGroups
     public required IReadOnlyList<double> Progressivity { get; init; }
 }
 
+/// <summary>
+/// How a country's real ministries map onto the portfolios (one per budget line), for display. The simulation
+/// itself never reads it. Keys of <see cref="Portfolios"/> are budget line names in camelCase.
+/// </summary>
+public sealed record MinistryMap
+{
+    public required string Country { get; init; }
+    public required string Source { get; init; }
+    public required IReadOnlyDictionary<string, IReadOnlyList<string>> Portfolios { get; init; }
+    /// <summary>Ministries whose work is the budget itself: held by the executive.</summary>
+    public required IReadOnlyList<string> ExecutiveDesk { get; init; }
+    /// <summary>Ministries with no levers yet, and what they wait for.</summary>
+    public required IReadOnlyDictionary<string, string> Parked { get; init; }
+    public IReadOnlyDictionary<string, string> Notes { get; init; } = new Dictionary<string, string>();
+
+    /// <summary>The portfolio (budget line) a ministry belongs to, or null for the executive desk and parked ones.</summary>
+    public BudgetLine? LineOf(string ministry)
+    {
+        foreach (var (key, ministries) in Portfolios)
+            if (ministries.Contains(ministry))
+                return Enum.Parse<BudgetLine>(key, ignoreCase: true);
+        return null;
+    }
+}
+
 public sealed record CountryPack
 {
     public required string Name { get; init; }

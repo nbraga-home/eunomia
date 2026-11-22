@@ -175,3 +175,11 @@ Worth watching: the poorest fifth ends lower than under any scripted government.
 ## Fifth look: the three branches meet (Nov 22, 2026, three-year trial)
 
 Haiku in all three seats, world seed 1, three years. In 2026 the judiciary blocked the executive's first budget on the EU debt rule for 2027 (naming the floor, the year and the path); the executive cut the deficit, the legislature amended it lower, the executive accepted, the judiciary passed. In 2027 the executive declined an amendment as "internally inconsistent", which turned out to be a display bug: revisions showed rates to one decimal, so 0.75% read as 0.8%. Rates the government sets are now shown to two decimals.
+
+## Sixth look: ten worlds, and the three branches over 40 years (Nov 22, 2026, unvalidated)
+
+**Single AI (Haiku) against the technocrat, worlds 1 to 10 (replayed under the corrected rules):** the AI ends with a higher median in 10 of 10 worlds (by +1% to +10%), a better worst year in 9, and a richer poorest fifth in 8. But it breaks a floor in 6 of 10, so under the win rule it scores 3 wins, 6 losses and 1 trade-off (against the status quo: 2 wins, 6 losses, 2 trade-offs). Of the six breaches, four were on rules it could see (the EU debt rule in worlds 2, 3 and 9; state capacity ending below 0.98 in world 10) and two only on the committed-spending floor, which it could not verify (worlds 6 and 8). The recurring weak spot is administration: once state capacity is high, the AI treats it as expendable in the late years.
+
+**Three branches (Haiku), world 1, 40 years:** 158 calls, 33 of 40 budgets settled in the first round, 6 amendments, 2 judiciary blocks (both on the EU debt rule, with correct four-year-window reasoning), no year without a decision. Highest incomes of any government on world 1 (median €64,051, poorest fifth €50,961, against the single AI's €60,752 and €43,281): the legislature's fair-spread mandate kept transfers at 41–46%. It breached the committed-spending floor for state capacity, which the judiciary could not check.
+
+**Response:** the report now carries a committed-spending gauge for the four checked indices (now, and after this year's budget), and every revision shows it. A test confirms the final-year gauge predicts the floor exactly. Most retries were unit slips (42 for 42%); the reply format should say "0.42 means 42%".

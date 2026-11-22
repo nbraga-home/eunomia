@@ -42,6 +42,10 @@ public sealed class Stock
     /// <summary>Average yearly spending still in the pipeline.</summary>
     public double PipelineAverage => _delay == 0 ? 0 : _pipeline.Average();
 
+    /// <summary>What <see cref="PipelineAverage"/> would be after <see cref="Advance"/> with this spending.</summary>
+    public double PipelineAverageAfter(double spending) =>
+        _delay == 0 ? spending : (_pipeline.Sum() - _pipeline.Peek() + spending) / _delay;
+
     /// <summary>Yearly spending that would hold the stock at its current level.</summary>
     public double HoldingAmount => Value * _baseline;
 

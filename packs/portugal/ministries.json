@@ -1,0 +1,26 @@
+// How Portugal's real ministries map onto the simulation's portfolios. Presentation only: the simulation runs
+// on the seven budget lines, and the game shows offices, never ministers' names.
+// Source: the XXV Constitutional Government (from June 2025), 16 ministries, as given by the project owner.
+{
+  "country": "Portugal",
+  "source": "XXV Constitutional Government, from June 2025: 16 ministries.",
+  "portfolios": {
+    "health": ["Health"],
+    "education": ["Education, Science and Innovation", "Culture, Youth and Sports"],
+    "infrastructure": ["Infrastructure and Housing", "Environment and Energy"],
+    "agriculture": ["Agriculture and Sea"],
+    "socialTransfers": ["Labour, Solidarity and Social Security"],
+    "security": ["National Defence", "Internal Administration"],
+    "administration": ["State Reform", "Presidency", "Parliamentary Affairs", "Justice"]
+  },
+  "executiveDesk": ["Finance"],
+  "parked": {
+    "Foreign Affairs": "Waits for external actions: loans, treaties, EU negotiations.",
+    "Economy and Territorial Cohesion": "Waits for EU funds and regional cohesion."
+  },
+  "notes": {
+    "Justice": "Under administration until the justice system becomes its own line, after the absorption limit exists.",
+    "Environment and Energy": "Energy networks count as infrastructure. Climate policy waits for a climate and energy module.",
+    "Culture, Youth and Sports": "Counted as education: youth and sport sit close to education's purpose."
+  }
+}
