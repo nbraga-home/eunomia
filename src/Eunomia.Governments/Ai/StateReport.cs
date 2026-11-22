@@ -28,11 +28,14 @@ public static class StateReport
         sb.AppendLine("- The planned deficit, as a share of last year's output. It includes interest. Negative means a surplus.");
         sb.AppendLine("- Budget shares for seven lines, summing to 1: health, education, infrastructure, agriculture, social transfers, security, administration.");
         sb.AppendLine("- Money for the seven lines = projected revenue at your tax rates + planned deficit × last year's output − interest due.");
+        sb.AppendLine("- Management shares for six sectors (every line except social transfers, which are cash): the part of each line spent on running the sector. The rest is front-line money. Management builds slowly into how much each front-line euro achieves, and how fast the sector can grow without waste.");
         sb.AppendLine();
         sb.AppendLine("## Rules (fixed for the whole run)");
         sb.AppendLine($"- Tax bounds: income {P(r.TaxBounds.Income.Min)}–{P(r.TaxBounds.Income.Max)}, corporate {P(r.TaxBounds.Corporate.Min)}–{P(r.TaxBounds.Corporate.Max)}, consumption {P(r.TaxBounds.Consumption.Min)}–{P(r.TaxBounds.Consumption.Max)}. Each rate can move at most {Pts(r.MaxTaxChangePerYear)} per year.");
         sb.AppendLine($"- Planned deficit between {P(r.DeficitBounds.Min)} and {P(r.DeficitBounds.Max)} of output.");
         sb.AppendLine($"- State capacity limits change: this year at most {P(ctx.ReallocationAllowance)} of the budget can move between lines (half the sum of the absolute changes in shares). A larger change is scaled down to fit.");
+        sb.AppendLine($"- Management shares between {P(r.ManagementShareBounds.Min)} and {P(r.ManagementShareBounds.Max)} of a line; each can move at most {Pts(r.MaxManagementChangePerYear)} per year.");
+        sb.AppendLine("- Each sector can absorb only so much growth in its front-line money in a year (see Sectors). Money above that is paid out but mostly wasted.");
         sb.AppendLine("- Part of every line is lost before delivery (leakage). Lenders price the country's credit rating, which an agency reviews once a year.");
         sb.AppendLine();
         sb.AppendLine("## Floors (breaching any one loses the run, whatever the income)");
@@ -71,6 +74,21 @@ public static class StateReport
                 sb.AppendLine($"  - {Label(line)}: share {ctx.Enacted.BudgetShares[line].ToString("0.0000", Inv)}, {Bn(enacted.Appropriations[(int)line])}");
         }
         sb.AppendLine();
+
+        if (ctx.Sectors.Count > 0)
+        {
+            sb.AppendLine("## Sectors");
+            sb.AppendLine("Efficiency is how much a front-line euro achieves against the start (1.00). Absorbable growth is how much front-line money can grow this year over what the sector absorbed last year without waste.");
+            sb.AppendLine("| Sector | Management share | Management index | Efficiency | Absorbable growth | Front-line growth at the policy in force |");
+            sb.AppendLine("|---|---|---|---|---|---|");
+            foreach (var s in ctx.Sectors)
+            {
+                var note = enacted.Absorption.FirstOrDefault(a => a.Line == s.Line);
+                string growth = note is null ? "-" : P(note.Growth) + (note.ExcessShare > 0.0005 ? $" ({P(note.ExcessShare)} of front-line money over the limit)" : "");
+                sb.AppendLine($"| {Label(s.Line)} | {P(ctx.Enacted.ManagementShares?[s.Line] ?? 0)} | {N(s.ManagementIndex)} | {N(s.Efficiency)} | {P(s.AbsorbableGrowth)} | {growth} |");
+            }
+            sb.AppendLine();
+        }
 
         if (ctx.Commitments.Count > 0)
         {
@@ -127,10 +145,18 @@ public static class StateReport
           "plannedDeficit": 0.0,
           "budgetShares": { "health": 0.165, "education": 0.10, "infrastructure": 0.14, "agriculture": 0.012,
                             "socialTransfers": 0.42, "security": 0.057, "administration": 0.106 },
+          "managementShares": { "health": 0.05, "education": 0.05, "infrastructure": 0.05, "agriculture": 0.05,
+                                "security": 0.05, "administration": 0.05 },
           "rationale": "{{rationaleHint}}",
           "expectations": "What you expect to happen, and by when."
         }
+        {{Units}}
         """;
+
+    /// <summary>Most failed replies in the first runs were unit slips (42 for 42%).</summary>
+    public const string Units =
+        "All rates and shares are decimals: 0.42 means 42%, and a planned deficit of -0.005 means a surplus of half a percent of output. " +
+        "\"managementShares\" may be left out to keep the shares in force.";
 
     /// <summary>A proposal as the branches see it: the numbers, and what moves against the policy in force.</summary>
     public static string DescribeRevision(string id, Policy p, CheckResult check, Policy inForce)
@@ -146,6 +172,14 @@ public static class StateReport
             string change = Math.Abs(delta) < 0.00005 ? "" : $" ({(delta > 0 ? "+" : "−")}{Math.Abs(delta * 100).ToString("0.00", Inv)} pts)";
             sb.AppendLine($"  - {Label(line)}: share {p.BudgetShares[line].ToString("0.0000", Inv)}{change}, {Bn(check.Appropriations[(int)line])}");
         }
+        if (p.ManagementShares is { } m && inForce.ManagementShares is { } m0)
+        {
+            var moves = ManagementShares.Lines.Where(l => Math.Abs(m[l] - m0[l]) >= 0.00005)
+                .Select(l => $"{Label(l)} {P2(m0[l])} → {P2(m[l])}").ToList();
+            if (moves.Count > 0) sb.AppendLine($"- Management shares: {string.Join(", ", moves)}.");
+        }
+        foreach (var a in check.Absorption.Where(a => a.ExcessShare > 0.0005))
+            sb.AppendLine($"- {Label(a.Line)}: front-line money grows {P(a.Growth)}, above the {P(a.Limit)} it can absorb; {P(a.ExcessShare)} of it is over the limit and mostly wasted.");
         if (check.Commitments.Count > 0)
             sb.AppendLine("- Committed spending after this budget: " +
                 string.Join(", ", check.Commitments.Select(c => $"{StockLabel(c.Stock)} {P0(c.Committed)}%")) + ".");

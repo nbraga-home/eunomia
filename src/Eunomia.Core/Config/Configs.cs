@@ -108,8 +108,9 @@ public sealed record EconomyConfig
     public required double Inflation { get; init; }
     public required BorrowingParams Borrowing { get; init; }
     public required RatingParams Rating { get; init; }
+    public required ManagementParams Management { get; init; }
 
-    /// <summary>Applies a named assumption set: scales the returns on skills, health, infrastructure and farm productivity.</summary>
+    /// <summary>Applies a named assumption set: scales the returns on skills, health, infrastructure, farm productivity and management.</summary>
     public EconomyConfig WithReturnsMultiplier(double m) => this with
     {
         Stocks = Stocks with
@@ -119,7 +120,26 @@ public sealed record EconomyConfig
             Infrastructure = Stocks.Infrastructure with { Exponent = Stocks.Infrastructure.Exponent * m },
             FarmProductivity = Stocks.FarmProductivity with { Exponent = Stocks.FarmProductivity.Exponent * m },
         },
+        Management = Management with { Exponent = Management.Exponent * m },
     };
+}
+
+/// <summary>
+/// The sector template: management quality and the absorption limit. Effective spending, the part that builds
+/// a sector's stock, is front-line money (the line minus its management share) times efficiency, where
+/// efficiency = min(maxEfficiency, management index ^ exponent). Front-line money can grow each year by
+/// absorptionGrowth × efficiency over what the sector absorbed last year; money above that builds only
+/// excessEffectiveness as much.
+/// </summary>
+public sealed record ManagementParams
+{
+    public required double StartShare { get; init; }
+    public required double Exponent { get; init; }
+    public required double MaxEfficiency { get; init; }
+    public required int DelayYears { get; init; }
+    public required double Depreciation { get; init; }
+    public required double AbsorptionGrowth { get; init; }
+    public required double ExcessEffectiveness { get; init; }
 }
 
 public sealed record ParameterSet
@@ -250,6 +270,9 @@ public sealed record GovernmentConfig
     public required Bounds DeficitBounds { get; init; }
     /// <summary>Share of the budget that can be moved between lines in one year, times state capacity.</summary>
     public required double ReallocationAllowance { get; init; }
+    /// <summary>Bounds on each sector's management share, and how far one can move in a year.</summary>
+    public required Bounds ManagementShareBounds { get; init; }
+    public required double MaxManagementChangePerYear { get; init; }
     public required Floors Floors { get; init; }
     public required double ScoreTolerance { get; init; }
 }

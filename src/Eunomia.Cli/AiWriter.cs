@@ -84,6 +84,11 @@ public static class AiWriter
         Tax("corporate", a.Taxes.Corporate, b.Taxes.Corporate);
         Tax("consumption", a.Taxes.Consumption, b.Taxes.Consumption);
         if (Math.Abs(a.PlannedDeficit - b.PlannedDeficit) > 1e-6) parts.Add($"planned deficit {P(a.PlannedDeficit)} → {P(b.PlannedDeficit)}");
+        if (a.ManagementShares is { } ma && b.ManagementShares is { } mb)
+        {
+            var m = ManagementShares.Lines.Where(l => Math.Abs(ma[l] - mb[l]) >= 0.0005).Select(l => $"{StateReport.Label(l)} {P(ma[l])} → {P(mb[l])}").ToList();
+            if (m.Count > 0) parts.Add($"management shares: {string.Join(", ", m)}");
+        }
         var moves = BudgetLines.All
             .Select(l => (Line: l, Delta: b.BudgetShares[l] - a.BudgetShares[l]))
             .Where(m => Math.Abs(m.Delta) >= 0.0005)

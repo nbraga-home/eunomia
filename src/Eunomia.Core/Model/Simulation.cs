@@ -36,6 +36,8 @@ public sealed class Simulation
     private Policy _enacted;
     private Flows _previous;
     private readonly Stock _skills, _health, _infrastructure, _farm, _capacity, _stability, _capital;
+    private readonly Dictionary<BudgetLine, Sector> _sectors;
+    private readonly Policy _startPolicy;
     private readonly YearRecord _opening;
 
     public Simulation(SimulationConfig config, string parameterSet, IReadOnlyList<FeedRow> feed)
@@ -46,7 +48,9 @@ public sealed class Simulation
         _feed = feed;
         _parameterSet = parameterSet;
         _startTaxes = _pack.Policy.Taxes;
-        _enacted = _pack.Policy;
+        var startManagement = _pack.Policy.ManagementShares ?? ManagementShares.Uniform(config.Economy.Management.StartShare);
+        _startPolicy = _pack.Policy with { ManagementShares = startManagement };
+        _enacted = _startPolicy;
         _households = _pack.Households;
         _debt = _pack.Debt;
         _effectiveRate = _pack.EffectiveRate;
@@ -61,7 +65,8 @@ public sealed class Simulation
         var opening = SolveOpening();
         _previous = opening;
 
-        double Baseline(BudgetLine line) => opening.Delivered[(int)line];
+        // Each stock is calibrated on the front-line money that builds it at the start (efficiency 1).
+        double Baseline(BudgetLine line) => opening.Delivered[(int)line] * (1 - startManagement[line]);
         _skills = new Stock(_e.Stocks.Skills, Baseline(BudgetLine.Education));
         _health = new Stock(_e.Stocks.Health, Baseline(BudgetLine.Health));
         _infrastructure = new Stock(_e.Stocks.Infrastructure, Baseline(BudgetLine.Infrastructure));
@@ -69,10 +74,11 @@ public sealed class Simulation
         _capacity = new Stock(_e.Stocks.StateCapacity, Baseline(BudgetLine.Administration));
         _stability = new Stock(_e.Stocks.Stability, Baseline(BudgetLine.Security));
         _capital = new Stock(_e.Stocks.PrivateCapital, opening.Investment);
+        _sectors = ManagementShares.Lines.ToDictionary(l => l, l => new Sector(l, _e.Management, startManagement[l], opening.Delivered[(int)l]));
 
         _agency = new RatingAgency(_e.Rating, _pack.Rating);
         double openingInterest = _effectiveRate * _debt;
-        _opening = Record(-1, opening, _pack.Policy, false, _openingWorld,
+        _opening = Record(-1, opening, _startPolicy, false, _openingWorld,
             interest: openingInterest,
             deficit: opening.TotalPaid + openingInterest - opening.Revenue,
             debt: _debt, marketRate: MarketRate(_openingWorld), growth: 0, ratingAction: null);
@@ -106,10 +112,11 @@ public sealed class Simulation
                 Last = history[^1],
                 History = history.ToList(),
                 Enacted = _enacted,
-                StartingPolicy = _pack.Policy,
+                StartingPolicy = _startPolicy,
                 ElectionYear = year >= _pack.FirstElectionYear && (year - _pack.FirstElectionYear) % 4 == 0,
                 ReallocationAllowance = _rules.ReallocationAllowance * _capacity.Value,
-                Commitments = Commitments(null),
+                Commitments = Commitments(null, null),
+                Sectors = _sectors.Values.Select(s => new SectorStatus(s.Line, s.ManagementIndex, s.Efficiency, s.AbsorbableGrowth)).ToList(),
                 Rules = _rules,
                 Check = Check,
             };
@@ -155,13 +162,13 @@ public sealed class Simulation
             _debt = closingDebt;
             _effectiveRate += (marketRate - _effectiveRate) / _e.Borrowing.AverageMaturityYears;
 
-            // 5. Stocks: this year's delivered spending enters the pipelines.
-            _skills.Advance(flows.Delivered[(int)BudgetLine.Education]);
-            _health.Advance(flows.Delivered[(int)BudgetLine.Health]);
-            _infrastructure.Advance(flows.Delivered[(int)BudgetLine.Infrastructure]);
-            _farm.Advance(flows.Delivered[(int)BudgetLine.Agriculture]);
-            _capacity.Advance(flows.Delivered[(int)BudgetLine.Administration]);
-            _stability.Advance(flows.Delivered[(int)BudgetLine.Security]);
+            // 5. Stocks: each sector splits its delivered money (management, front line, absorption), and
+            //    only effective spending enters the stock's pipeline.
+            foreach (var sector in _sectors.Values)
+            {
+                var split = sector.Advance(flows.Delivered[(int)sector.Line], _enacted.ManagementShares![sector.Line]);
+                StockFor(sector.Line).Advance(split.Effective);
+            }
             _capital.Advance(flows.Investment);
 
             // 6. Trend and people
@@ -203,6 +210,18 @@ public sealed class Simulation
         if (!double.IsFinite(p.PlannedDeficit) || !_rules.DeficitBounds.Contains(p.PlannedDeficit))
             errors.Add($"Planned deficit {p.PlannedDeficit} is outside {_rules.DeficitBounds.Min} to {_rules.DeficitBounds.Max}.");
 
+        // Management shares: null keeps the shares in force.
+        var management = p.ManagementShares ?? _enacted.ManagementShares!;
+        foreach (var line in ManagementShares.Lines)
+        {
+            double m = management[line], now = _enacted.ManagementShares![line];
+            var b = _rules.ManagementShareBounds;
+            if (!double.IsFinite(m) || !b.Contains(m))
+                errors.Add($"Management share for {line} {m} is outside {b.Min} to {b.Max}.");
+            else if (Math.Abs(m - now) > _rules.MaxManagementChangePerYear + 1e-12)
+                errors.Add($"Management share for {line} can move at most {_rules.MaxManagementChangePerYear} a year (from {now} to {m}).");
+        }
+
         if (errors.Count > 0) return new CheckResult { Errors = errors };
 
         // Limited state capacity: only so much of the budget can move between lines in a year.
@@ -215,7 +234,7 @@ public sealed class Simulation
             double k = allowance / cost;
             shares = current.Zip(shares, (c, s) => c + (s - c) * k).ToArray();
         }
-        var feasible = p with { BudgetShares = BudgetShares.FromArray(shares) };
+        var feasible = p with { BudgetShares = BudgetShares.FromArray(shares), ManagementShares = management };
 
         double envelope = Envelope(feasible);
         if (envelope <= 0)
@@ -229,30 +248,53 @@ public sealed class Simulation
             Envelope = envelope,
             Appropriations = appropriations,
             Scaled = scaled,
-            Commitments = Commitments(appropriations),
+            Commitments = Commitments(appropriations, management),
+            Absorption = Absorption(appropriations, management),
         };
     }
 
     /// <summary>
     /// The end-state gauge for the four stocks the final-year floor checks. With appropriations, it shows the
-    /// pipelines after this year's delivered spending enters them; without, as they stand now.
+    /// pipelines after this year's effective spending enters them; without, as they stand now.
     /// </summary>
-    private IReadOnlyList<Commitment> Commitments(IReadOnlyList<double>? appropriations)
+    private IReadOnlyList<Commitment> Commitments(IReadOnlyList<double>? appropriations, ManagementShares? management)
     {
         if (!_rules.Floors.EndStatePipelines.Enabled) return [];
         double threshold = _rules.Floors.EndStateStocks.Threshold;
-        double deliveredShare = 1 - Leakage(_capacity.Value);
         var list = new List<Commitment>();
         foreach (var (name, stock, line) in CheckedStocks)
         {
             if (!stock.Active || stock.Delay == 0) continue;
             double pipeline = appropriations is null
                 ? stock.PipelineAverage
-                : stock.PipelineAverageAfter(appropriations[(int)line] * deliveredShare);
+                : stock.PipelineAverageAfter(_sectors[line].Split(Delivered(appropriations[(int)line]), management![line]).Effective);
             list.Add(new Commitment(name, stock.Value, pipeline / stock.HoldingAmountAt(threshold)));
         }
         return list;
     }
+
+    /// <summary>For each sector, how fast this budget grows its front-line money against how fast it can absorb.</summary>
+    private IReadOnlyList<AbsorptionNote> Absorption(IReadOnlyList<double> appropriations, ManagementShares management) =>
+        _sectors.Values.Select(s =>
+        {
+            var split = s.Split(Delivered(appropriations[(int)s.Line]), management[s.Line]);
+            double growth = s.Absorbed > 0 ? split.FrontLine / s.Absorbed - 1 : 0;
+            return new AbsorptionNote(s.Line, growth, s.AbsorbableGrowth, split.FrontLine > 0 ? split.Excess / split.FrontLine : 0);
+        }).ToList();
+
+    /// <summary>What reaches the sector of an appropriation, after leakage at today's state capacity.</summary>
+    private double Delivered(double appropriation) => appropriation * (1 - Leakage(_capacity.Value));
+
+    private Stock StockFor(BudgetLine line) => line switch
+    {
+        BudgetLine.Education => _skills,
+        BudgetLine.Health => _health,
+        BudgetLine.Infrastructure => _infrastructure,
+        BudgetLine.Agriculture => _farm,
+        BudgetLine.Administration => _capacity,
+        BudgetLine.Security => _stability,
+        _ => throw new ArgumentOutOfRangeException(nameof(line), "Social transfers build no stock."),
+    };
 
     private (string Name, Stock Stock, BudgetLine Line)[] CheckedStocks =>
     [
@@ -529,6 +571,7 @@ public sealed class Simulation
         StateCapacity = _capacity?.Value ?? 1,
         Stability = _stability?.Value ?? 1,
         PrivateCapital = _capital?.Value ?? 1,
+        Efficiency = BudgetLines.All.Select(l => _sectors is not null && _sectors.TryGetValue(l, out var s) ? s.Efficiency : 1.0).ToArray(),
         Policy = policy,
         CarriedOver = carried,
         ExportDemand = world.ExportDemand,

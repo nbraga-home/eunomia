@@ -80,8 +80,19 @@ public static class ReplyParser
         double sum = shares.Sum();
         if (shares.Any(s => s < 0)) { errors.Add("Budget shares cannot be negative."); return null; }
         if (Math.Abs(sum - 1) > ShareSumSlack) { errors.Add($"Budget shares sum to {sum:0.0000}; they must sum to 1."); return null; }
-        return new Policy(taxes, deficit, BudgetShares.FromArray(shares.Select(s => s / sum).ToArray()));
+
+        // Optional: left out, the management shares in force are kept.
+        ManagementShares? management = null;
+        if (root.TryGetProperty("managementShares", out var mEl) && mEl.ValueKind == JsonValueKind.Object)
+        {
+            var m = ManagementNames.Select(n => Num(mEl, n, "managementShares")).ToArray();
+            if (errors.Count > before) return null;
+            management = ManagementShares.FromArray(m);
+        }
+        return new Policy(taxes, deficit, BudgetShares.FromArray(shares.Select(s => s / sum).ToArray()), management);
     }
+
+    private static readonly string[] ManagementNames = ["health", "education", "infrastructure", "agriculture", "security", "administration"];
 
     private static JsonElement? Extract(string text, out string? error)
     {

@@ -37,6 +37,8 @@ public sealed record MeetingContext
     public required double ReallocationAllowance { get; init; }
     /// <summary>The end-state gauge now, before this year's budget. Empty when the pipeline floor is off.</summary>
     public required IReadOnlyList<Commitment> Commitments { get; init; }
+    /// <summary>Each sector's management quality and absorption limit this year.</summary>
+    public required IReadOnlyList<SectorStatus> Sectors { get; init; }
     public required GovernmentConfig Rules { get; init; }
     /// <summary>Validates a proposal and returns its feasible form, envelope and appropriations. May be called freely.</summary>
     public required Func<Policy, CheckResult> Check { get; init; }
@@ -49,6 +51,15 @@ public sealed record MeetingContext
 /// </summary>
 public sealed record Commitment(string Stock, double Index, double Committed);
 
+/// <summary>A sector as the government sees it: how well it is run, and how fast it can grow without waste.</summary>
+public sealed record SectorStatus(BudgetLine Line, double ManagementIndex, double Efficiency, double AbsorbableGrowth);
+
+/// <summary>
+/// What a budget does to one sector's front-line money: its growth against last year's absorbed amount, the
+/// growth the sector can absorb, and the share of front-line money above that limit (largely wasted).
+/// </summary>
+public sealed record AbsorptionNote(BudgetLine Line, double Growth, double Limit, double ExcessShare);
+
 public sealed record CheckResult
 {
     public required IReadOnlyList<string> Errors { get; init; }
@@ -60,6 +71,8 @@ public sealed record CheckResult
     public bool Scaled { get; init; }
     /// <summary>The end-state gauge after this year's budget, if this proposal is enacted.</summary>
     public IReadOnlyList<Commitment> Commitments { get; init; } = [];
+    /// <summary>For each sector, this budget's front-line growth against what the sector can absorb.</summary>
+    public IReadOnlyList<AbsorptionNote> Absorption { get; init; } = [];
     public bool Ok => Errors.Count == 0;
 }
 

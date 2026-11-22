@@ -13,6 +13,19 @@
     "stability":        { "delayYears": 0, "depreciation": 0.20 },
     "privateCapital":   { "delayYears": 0, "depreciation": 0.06 }
   },
+  // The sector template (all assumptions). Effective spending = front-line money x efficiency, where
+  // efficiency = min(maxEfficiency, management index ^ exponent). With exponent 0.15 the best management
+  // share is about 13% of a line. Front-line money can grow absorptionGrowth x efficiency a year over what
+  // the sector absorbed last year; the excess builds only excessEffectiveness as much.
+  "management": {
+    "startShare": 0.05,
+    "exponent": 0.15,
+    "maxEfficiency": 1.5,
+    "delayYears": 2,
+    "depreciation": 0.10,
+    "absorptionGrowth": 0.10,
+    "excessEffectiveness": 0.2
+  },
   "loss":       { "base": 0.01, "stabilityExponent": 0.5, "max": 0.5 },
   "leakage":    { "base": 0.05, "capacityExponent": 1.0, "max": 0.5 },
   "collection": { "base": 0.90, "capacityExponent": 0.5 },

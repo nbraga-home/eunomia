@@ -58,6 +58,8 @@ public sealed record YearRecord
     public required double StateCapacity { get; init; }
     public required double Stability { get; init; }
     public required double PrivateCapital { get; init; }
+    /// <summary>Each line's efficiency (management index ^ exponent, capped), in budget-line order; 1 for social transfers.</summary>
+    public required IReadOnlyList<double> Efficiency { get; init; }
 
     // Policy in force and the world
     public required Policy Policy { get; init; }

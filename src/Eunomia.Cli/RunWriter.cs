@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text;
 using System.Text.Json;
+using Eunomia.Core;
 using Eunomia.Core.Config;
 using Eunomia.Core.Model;
 using Eunomia.Core.World;
@@ -54,6 +55,18 @@ public static class RunWriter
         ("stateCapacity", r => r.StateCapacity),
         ("stability", r => r.Stability),
         ("privateCapital", r => r.PrivateCapital),
+        ("effHealth", r => r.Efficiency[(int)BudgetLine.Health]),
+        ("effEducation", r => r.Efficiency[(int)BudgetLine.Education]),
+        ("effInfrastructure", r => r.Efficiency[(int)BudgetLine.Infrastructure]),
+        ("effAgriculture", r => r.Efficiency[(int)BudgetLine.Agriculture]),
+        ("effSecurity", r => r.Efficiency[(int)BudgetLine.Security]),
+        ("effAdministration", r => r.Efficiency[(int)BudgetLine.Administration]),
+        ("mgmtHealth", r => r.Policy.ManagementShares?.Health ?? 0),
+        ("mgmtEducation", r => r.Policy.ManagementShares?.Education ?? 0),
+        ("mgmtInfrastructure", r => r.Policy.ManagementShares?.Infrastructure ?? 0),
+        ("mgmtAgriculture", r => r.Policy.ManagementShares?.Agriculture ?? 0),
+        ("mgmtSecurity", r => r.Policy.ManagementShares?.Security ?? 0),
+        ("mgmtAdministration", r => r.Policy.ManagementShares?.Administration ?? 0),
         ("taxIncome", r => r.Policy.Taxes.Income),
         ("taxCorporate", r => r.Policy.Taxes.Corporate),
         ("taxConsumption", r => r.Policy.Taxes.Consumption),

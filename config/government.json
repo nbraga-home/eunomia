@@ -9,6 +9,9 @@
   "maxTaxChangePerYear": 0.03,
   "deficitBounds": { "min": -0.05, "max": 0.08 },
   "reallocationAllowance": 0.05,
+  // Management share: the part of each sector's money spent on running it.
+  "managementShareBounds": { "min": 0.0, "max": 0.25 },
+  "maxManagementChangePerYear": 0.02,
   "floors": {
     "debt":              { "enabled": true, "maxInterestShareOfRevenue": 0.20, "rateCeiling": 0.12 },
     // EU fiscal rules, simplified: deficit under 3%, and debt above 60% falling on average over 4 years
