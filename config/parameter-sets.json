@@ -1,9 +1,11 @@
 // Named assumption sets. The multiplier scales the returns on skills, health, infrastructure, farm productivity
-// and management. educationSpendingElasticity is how strongly school stock per pupil turns into learning:
-// doubling spending per pupil raises learning by about 23% (0.3), 41% (0.5) or 74% (0.8). privateEfficiency is
-// learning per euro in private schools against public ones; the evidence is mixed, so it spans 0.85 to 1.15.
+// and management. Three education assumptions where the evidence is mixed also vary:
+// - educationSpendingElasticity: doubling spending per pupil raises learning by about 23% (0.3), 41% (0.5) or 74% (0.8);
+// - privateEfficiency: learning per euro in private schools against public ones;
+// - selectiveQualityGain: extra learning in selective schools for those who stay (studies of early tracking
+//   find more inequality without a clear average gain, so the low set assumes none).
 {
-  "central":     { "returnsMultiplier": 1.0, "educationSpendingElasticity": 0.5, "privateEfficiency": 1.0 },
-  "lowReturns":  { "returnsMultiplier": 0.5, "educationSpendingElasticity": 0.3, "privateEfficiency": 0.85 },
-  "highReturns": { "returnsMultiplier": 1.5, "educationSpendingElasticity": 0.8, "privateEfficiency": 1.15 }
+  "central":     { "returnsMultiplier": 1.0, "educationSpendingElasticity": 0.5, "privateEfficiency": 1.0,  "selectiveQualityGain": 0.05 },
+  "lowReturns":  { "returnsMultiplier": 0.5, "educationSpendingElasticity": 0.3, "privateEfficiency": 0.85, "selectiveQualityGain": 0.0 },
+  "highReturns": { "returnsMultiplier": 1.5, "educationSpendingElasticity": 0.8, "privateEfficiency": 1.15, "selectiveQualityGain": 0.10 }
 }

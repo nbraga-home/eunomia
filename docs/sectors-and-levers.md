@@ -139,7 +139,7 @@ Sector depth is what gives ministers something to do. A minister's levers are th
 
 1. **Template core for every line:** management quality and the absorption limit, at national level. Rerun the returns table; the stock-size artefact should disappear. *Done Nov 22, 2026: the artefact is gone (build plan, seventh look).*
 2. **Education outputs:** skills by income fifth, generations, wages by group, coverage and quality. *Done Nov 22, 2026 (build plan, eighth look).*
-3. **Education regimes and constitution options,** the policy-resistance switch, then the regime search (no model calls).
+3. **Education regimes and constitution options,** the policy-resistance switch, then the regime search (no model calls). *Done Nov 22, 2026 (build plan, ninth look).*
 4. **Health** on the same template.
 5. **Regions,** with the map: distribution by region and fifth, and the health regions.
 6. **EU funds,** and the Ministry of Economy's levers.

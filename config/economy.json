@@ -58,7 +58,7 @@
     "takeUpBase": 0.75,
     "takeUpCapacityExponent": 1.0,
     "testingAdminCost": 0.10,
-    "selectiveQualityGain": 0.10,
+    "selectiveQualityGain": 0.05,
     "selectivePenalty": [0.6, 0.45, 0.3, 0.15, 0.0],
     "compulsoryBoost": { "basic": 5.0, "secondary": 3.0 },
     "earmarkYears": 10,

@@ -252,6 +252,8 @@ public sealed record ParameterSet
     public double? EducationSpendingElasticity { get; init; }
     /// <summary>Overrides learning per euro in private schools against public ones. Null keeps economy.json's value.</summary>
     public double? PrivateEfficiency { get; init; }
+    /// <summary>Overrides the learning gain of selective schools for those who stay. Null keeps economy.json's value.</summary>
+    public double? SelectiveQualityGain { get; init; }
 }
 
 // ---------- World ----------

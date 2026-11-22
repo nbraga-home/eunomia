@@ -55,6 +55,8 @@ public static class ConfigLoader
             economy = economy with { Education = economy.Education with { SpendingElasticity = e } };
         if (set.PrivateEfficiency is double pe)
             economy = economy with { EducationRegimes = economy.EducationRegimes with { PrivateEfficiency = pe } };
+        if (set.SelectiveQualityGain is double sg)
+            economy = economy with { EducationRegimes = economy.EducationRegimes with { SelectiveQualityGain = sg } };
         return economy;
     }
 }

@@ -92,6 +92,74 @@ public static class Commands
     }
 
     /// <summary>
+    /// The regime search: every combination of education regime choices, on one scripted yearly budget, across
+    /// many worlds and every named set. Each regime is paired with the starting regime in the same world, so
+    /// shocks cancel. Reports what is best inside the model under each set, and whether the answer flips.
+    /// </summary>
+    public static int Regimes(Args a)
+    {
+        var (config, settings) = LoadConfig(a);
+        if (a.Has("resistance"))
+            config = config with { Government = config.Government with { Resistance = config.Government.Resistance with { Enabled = true } } };
+        string baseName = a.Get("base", "frozen");
+        var seeds = a.GetSeeds("seeds", "1-10");
+        var sets = a.GetList("sets", "central,lowReturns,highReturns");
+        var start = config.Pack.Policy.EducationRegime!;
+        var regimes = RegimeFixed.All().ToList();
+
+        var csv = new StringBuilder("set,regime,seed,status,finalMedian,worstMedian,finalPoorest,outcomeVsStart,breaches\n");
+        Console.WriteLine($"Education regimes on the {baseName} budget, {seeds.Count} worlds per set, against Portugal's regime today ({RegimeFixed.Code(start)}).");
+        Console.WriteLine($"Resistance {(config.Government.Resistance.Enabled ? "on" : "off")}. Changes against today's regime are averages over worlds; W/L/T are win rule outcomes against it.\n");
+
+        var winners = new Dictionary<string, string>();
+        foreach (string set in sets)
+        {
+            var rows = new List<(EducationRegime Regime, double Final, double Worst, double Poorest, int W, int L, int T, int Breached)>();
+            var baseline = seeds.ToDictionary(s => s, s =>
+                new Simulation(config, set, Feed(config, s)).Run(new RegimeFixed(Occupants.Create(baseName, settings), start)).Summary);
+            foreach (var regime in regimes)
+            {
+                double final = 0, worst = 0, poorest = 0;
+                int w = 0, l = 0, t = 0, breached = 0;
+                foreach (ulong seed in seeds)
+                {
+                    var s = new Simulation(config, set, Feed(config, seed)).Run(new RegimeFixed(Occupants.Create(baseName, settings), regime)).Summary;
+                    var b = baseline[seed];
+                    final += s.FinalMedian / b.FinalMedian - 1;
+                    worst += s.WorstMedian / b.WorstMedian - 1;
+                    poorest += s.FinalLowestFifth / b.FinalLowestFifth - 1;
+                    var o = Judge.Compare(s, b, config.Government.ScoreTolerance);
+                    if (o == Outcome.AWins) w++; else if (o == Outcome.BWins) l++; else if (o == Outcome.TradeOff) t++;
+                    if (s.Status == RunStatus.Breached) breached++;
+                    csv.Append(string.Join(',', set, RegimeFixed.Code(regime), seed, s.Status, F(s.FinalMedian), F(s.WorstMedian), F(s.FinalLowestFifth), o,
+                        Quote(string.Join("; ", s.Breaches.Select(x => x.Floor).Distinct())))).Append('\n');
+                }
+                int n = seeds.Count;
+                rows.Add((regime, final / n, worst / n, poorest / n, w, l, t, breached));
+            }
+
+            var ranked = rows.OrderByDescending(r => r.Breached == 0).ThenByDescending(r => r.Final).ToList();
+            winners[set] = RegimeFixed.Code(ranked[0].Regime);
+            Console.WriteLine($"[{set}]  top 8 of {rows.Count}, clean regimes first, then by final median");
+            Console.WriteLine($"  {"regime (provision/fees/support/standards)",-46} {"final",7} {"worst",7} {"poorest",8}  {"W/L/T",9}  breached");
+            foreach (var r in ranked.Take(8))
+                Console.WriteLine($"  {RegimeFixed.Code(r.Regime),-46} {Pct(r.Final),7} {Pct(r.Worst),7} {Pct(r.Poorest),8}  {$"{r.W}/{r.L}/{r.T}",9}  {r.Breached}/{seeds.Count}");
+            var worstRow = ranked[^1];
+            Console.WriteLine($"  {"… last: " + RegimeFixed.Code(worstRow.Regime),-46} {Pct(worstRow.Final),7} {Pct(worstRow.Worst),7} {Pct(worstRow.Poorest),8}  {$"{worstRow.W}/{worstRow.L}/{worstRow.T}",9}  {worstRow.Breached}/{seeds.Count}\n");
+        }
+
+        bool flips = winners.Values.Distinct().Count() > 1;
+        Console.WriteLine(flips
+            ? $"The best regime flips between sets: {string.Join("; ", winners.Select(w => $"{w.Key} → {w.Value}"))}. The answer depends on the assumptions."
+            : $"The same regime is best under every set: {winners.Values.First()}.");
+        string outPath = a.Get("out", Path.Combine(RepoRoot(), "runs", "regimes.csv"));
+        Directory.CreateDirectory(Path.GetDirectoryName(outPath)!);
+        File.WriteAllText(outPath, csv.ToString());
+        Console.WriteLine($"Best inside the model, under these assumptions; unvalidated. Details: {outPath}");
+        return 0;
+    }
+
+    /// <summary>
     /// Scores recorded AI runs against a scripted government in the same worlds. Each recorded run is replayed
     /// (no model calls), so the comparison uses the current rules. Missing folders are reported, never dropped.
     /// </summary>

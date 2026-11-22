@@ -214,3 +214,19 @@ Education money builds a school stock; quality is school stock per pupil to the 
 **Technocrat against status quo, 50 worlds:** central 14 losses and 36 trade-offs (final median +0.2%, was +1.8%); low returns 49 losses; high returns 50 trade-offs (+2.6%).
 
 **Two things to watch.** The spending-to-learning elasticity (0.5) now largely decides what education money is worth, and it is not yet in the named sets. And with wages following skills one for one, frozen policy compresses inequality strongly over 40 years. Both are assumptions to test, not findings.
+
+## Ninth look: the education regime search (step 3 of sectors and levers, Nov 22, 2026, unvalidated)
+
+All 36 combinations of provision, university fees, student support and standards (the earmark only matters when a government cuts, so it is left out), each held from year 0 on the frozen budget, paired with Portugal's regime today (public, flat fee, tested support, comprehensive) over 10 worlds per set. `eunomia regimes`, no model calls, seconds to run.
+
+The first pass gave selective schools a 10% learning gain for those who stay in every set, and selective topped every list. Studies of early tracking tend to find more inequality without a clear average gain, so the gain now spans the sets (0 low, 5% central, 10% high), like private efficiency.
+
+| Set | Best regime | Final median | Poorest fifth |
+| --- | --- | --- | --- |
+| Central | public / free / universal / selective | +0.86% | -0.61% |
+| Low returns | public / free / universal / comprehensive | +0.45% | -0.13% |
+| High returns | private / income-scaled / universal / selective | +5.68% | +1.90% |
+
+**What holds across sets:** universal student support is in every set's best regime; public provision wins under central and low assumptions; fees matter less than support. **What flips:** provision (private wins only when private schools are assumed 15% more efficient) and standards (selective wins when it is assumed to teach more, and then lowers the poorest fifth's income under central assumptions). The worst regime under central and low assumptions is private with flat fees and tested support: the poorest fifth ends 2.8% to 5.0% worse off.
+
+**The median score lets a regime win while the poorest lose.** Central's best regime raises the median and lowers the poorest fifth. The win rule only protects the poorest down to their 80% floor. This is a value question for the score, not a modelling one.
