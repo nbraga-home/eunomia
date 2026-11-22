@@ -90,7 +90,7 @@ Each branch owns a different time horizon: the executive the future, the legisla
 
 **Executive**
 
-> Your mandate is the long-run prosperity of the people: raise the income of the median household by year 40. You propose the budget, taxes and borrowing. For each change, state its expected effect and its delay.
+> Your mandate is the long-run prosperity of the people: raise the income of the median household by year 40. A gain for the median that leaves the poorest fifth worse off in the final year does not count. You propose the budget, taxes and borrowing. For each change, state its expected effect and its delay.
 
 **Legislature**
 
@@ -137,12 +137,12 @@ Version one is a government that allocates funds. The intent is a government tha
 The government is told to raise median income without breaching the floors. The player sets all of this before a run, and it is fixed during the run.
 
 - **Floors.** No hunger crisis, debt stays payable, no region left to collapse, and no stock (skills, health, infrastructure, state capacity) ends lower than it started. Each floor can be switched on or off and its threshold set in configuration.
-- **Goal.** Median income: the middle household, so a gain that goes only to the top does not count.
+- **Goal.** Median income: the middle household, so a gain that goes only to the top does not count. Guarded by the poorest fifth: a gain for the median that leaves the poorest fifth worse off does not count either (decided Nov 22, 2026).
 - **Horizon.** Judged at 40 years, together with the worst year along the way. Forty years is a generation: a child born in year one is schooled, enters work and reaches a full career inside the run, so slow investments such as education can pay back within it.
 - **End-state check.** Debt and the condition of schools, health and infrastructure at year 40, so it cannot win by borrowing from the future.
 - **Measure more than you ask for.** The dashboard tracks things the branches were not told to pursue, which is how gaming gets caught.
 
-**Who wins.** A run that breaches any floor loses to a run that breaches none, whatever its income. Between two clean runs, one beats the other only if it is at least as good on both the final-year median and the worst-year median, and better on one. Anything else is reported as a trade-off with no winner.
+**Who wins.** A run that breaches any floor loses to a run that breaches none, whatever its income. Between two clean runs, one beats the other only if it is at least as good on both the final-year median and the worst-year median, and better on one, and its poorest fifth ends the final year no worse off. Anything else is reported as a trade-off with no winner. The poorest fifth is a guard, not a second target: it can block a win but never earn one (decided Nov 22, 2026).
 
 ## What the government sees
 

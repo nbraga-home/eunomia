@@ -42,7 +42,7 @@ dotnet run --project src/Eunomia.Cli -- compare --runs "runs/singleai-haiku-s{se
 - `src/Eunomia.Core`: the simulation. `Model/Simulation.cs` (the yearly loop, budget checks, floors), `Sector.cs` (management and absorption), `EducationSystem.cs` (coverage, quality, generations), `EducationRegimeState.cs` (regimes, phase-in, earmark, fees and grants), `RatingAgency.cs`, `Stock.cs`, `Scoring.cs`; `World/Feed.cs`; `Config/`; `Government.cs` (the slot contract); `Policy.cs`; `EducationRegime.cs`.
 - `src/Eunomia.Governments`: Frozen, StatusQuo, Technocrat, ReplayDecisions, ReturnsProbe, RegimeFixed, Occupants. `Ai/`: `Models.cs` (CliModel, ScriptedModel), `StateReport.cs` (the only prompt builder), `ReplyParser.cs`, `SingleAi.cs`, `ThreeBranch.cs`.
 - `src/Eunomia.Cli`: commands and writers (`years.csv`, `deliberations.md`, `transcripts.jsonl`).
-- `tests/Eunomia.Tests`: 108 tests, all passing.
+- `tests/Eunomia.Tests`: 112 tests, all passing.
 - `config/`: economy, world, government (floors, constitution, resistance switch), parameter sets, baseline scripts, models, `mandates/`.
 - `packs/portugal/`: `country.json` (data and starting policy), `ministries.json` (display only).
 - `runs/`: output, ignored by git. The only copies of the AI runs live here: `singleai-haiku-s1` to `s10`, `threebranch-haiku-s1`, `smoke-*`.
@@ -62,8 +62,9 @@ The AI runs in `runs/` predate steps 1 to 3, so they never used management share
 
 ## Open decisions for the owner
 
-1. Add the poorest fifth's final income to the win rule? Under central assumptions the best education regime raises the median while lowering the poorest fifth, and the rule allows it.
-2. Next: step 4 (health on the sector template), or first rerun the AI governments with education regimes available.
+1. Next after the AI reruns with education regimes: step 4 (health on the sector template).
+
+Decided Nov 22, 2026: the poorest fifth guards the win rule (build plan, tenth look); rerun the AI governments before health.
 
 ## Backlog (known gaps, not built)
 

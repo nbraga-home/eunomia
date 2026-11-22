@@ -4,7 +4,7 @@ public sealed record Breach(string Floor, int Year, bool CarriedOver, string Det
 
 public enum RunStatus { Clean, Breached }
 
-/// <summary>How a run is judged: floors first, then the median household in the final and the worst year.</summary>
+/// <summary>How a run is judged: floors first, then the median household in the final and the worst year, guarded by the poorest fifth.</summary>
 public sealed record RunSummary
 {
     public required string Occupant { get; init; }
@@ -45,7 +45,8 @@ public static class Judge
 {
     /// <summary>
     /// A clean run beats a breached one. Between clean runs, one wins only if it is at least as good on both
-    /// the final and the worst median and better on one, beyond the tolerance. Anything else is a trade-off.
+    /// the final and the worst median and better on one, beyond the tolerance, and its poorest fifth ends no worse
+    /// off in the final year (the guard). Anything else is a trade-off.
     /// </summary>
     public static Outcome Compare(RunSummary a, RunSummary b, double tolerance)
     {
@@ -56,8 +57,9 @@ public static class Judge
 
         int final = Order(a.FinalMedian, b.FinalMedian, tolerance);
         int worst = Order(a.WorstMedian, b.WorstMedian, tolerance);
-        if (final >= 0 && worst >= 0 && (final > 0 || worst > 0)) return Outcome.AWins;
-        if (final <= 0 && worst <= 0 && (final < 0 || worst < 0)) return Outcome.BWins;
+        int poorest = Order(a.FinalLowestFifth, b.FinalLowestFifth, tolerance);
+        if (final >= 0 && worst >= 0 && (final > 0 || worst > 0) && poorest >= 0) return Outcome.AWins;
+        if (final <= 0 && worst <= 0 && (final < 0 || worst < 0) && poorest <= 0) return Outcome.BWins;
         return Outcome.TradeOff;
     }
 

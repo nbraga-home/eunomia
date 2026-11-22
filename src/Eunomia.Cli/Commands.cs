@@ -138,9 +138,9 @@ public static class Commands
                 rows.Add((regime, final / n, worst / n, poorest / n, w, l, t, breached));
             }
 
-            var ranked = rows.OrderByDescending(r => r.Breached == 0).ThenByDescending(r => r.Final).ToList();
+            var ranked = rows.OrderByDescending(r => r.Breached == 0).ThenByDescending(r => r.W).ThenByDescending(r => r.Final).ToList();
             winners[set] = RegimeFixed.Code(ranked[0].Regime);
-            Console.WriteLine($"[{set}]  top 8 of {rows.Count}, clean regimes first, then by final median");
+            Console.WriteLine($"[{set}]  top 8 of {rows.Count}, clean regimes first, then by wins under the win rule, then by final median");
             Console.WriteLine($"  {"regime (provision/fees/support/standards)",-46} {"final",7} {"worst",7} {"poorest",8}  {"W/L/T",9}  breached");
             foreach (var r in ranked.Take(8))
                 Console.WriteLine($"  {RegimeFixed.Code(r.Regime),-46} {Pct(r.Final),7} {Pct(r.Worst),7} {Pct(r.Poorest),8}  {$"{r.W}/{r.L}/{r.T}",9}  {r.Breached}/{seeds.Count}");

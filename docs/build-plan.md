@@ -36,7 +36,7 @@ Everything is in constant 2024 euros. Every stock is an index that starts at 1.
 10. **Sectors** (since the seventh look). Six sectors split their money into a management share and front-line money; management quality and an absorption limit decide how much front-line money builds the sector's stock. See `sectors-and-levers.md`.
 11. **Education** (since the eighth and ninth looks). Skills by income fifth across generations, coverage and quality driven by household demand and the parents' schooling, wages by fifth following skills, and five regime choices. See `sectors-and-levers.md`.
 
-**Score.** Real disposable income of the median household (the middle fifth), in the final year and in the worst year. Floors first, then income, as in the design notes.
+**Score.** Real disposable income of the median household (the middle fifth), in the final year and in the worst year, guarded by the poorest fifth: a run cannot win if its poorest fifth ends the final year worse off (since the tenth look). Floors first, then income, as in the design notes.
 
 ## Occupants
 
@@ -235,4 +235,21 @@ The first pass gave selective schools a 10% learning gain for those who stay in 
 
 **What holds across sets:** universal student support is in every set's best regime; public provision wins under central and low assumptions; fees matter less than support. **What flips:** provision (private wins only when private schools are assumed 15% more efficient) and standards (selective wins when it is assumed to teach more, and then lowers the poorest fifth's income under central assumptions). The worst regime under central and low assumptions is private with flat fees and tested support: the poorest fifth ends 2.8% to 5.0% worse off.
 
-**The median score lets a regime win while the poorest lose.** Central's best regime raises the median and lowers the poorest fifth. The win rule only protects the poorest down to their 80% floor. This is a value question for the score, not a modelling one.
+**The median score lets a regime win while the poorest lose.** Central's best regime raises the median and lowers the poorest fifth. The win rule only protects the poorest down to their 80% floor. This is a value question for the score, not a modelling one.  *Resolved in the tenth look: the owner chose a guard on the poorest fifth.*
+
+## Tenth look: the poorest fifth guards the win rule (Nov 22, 2026, unvalidated)
+
+The owner chose a guard. Between two clean runs, one wins only if it is at least as good on the final and worst median, better on one, **and its poorest fifth ends the final year no worse off** (within the same 0.1% tolerance). The poorest fifth can block a win but never earn one. The single AI and executive mandates now say so in one sentence.
+
+| Comparison | Before | With the guard |
+| --- | --- | --- |
+| Best regime, central | public / free / universal / selective (median +0.86%, poorest -0.61%): a win in 10 of 10 worlds | public / income-scaled / universal / comprehensive (median +0.31%, poorest -0.06%, inside the tolerance): selective is now a trade-off in every world |
+| Best regime, low returns | public / free / universal / comprehensive (+0.45%, poorest -0.13%) | public / income-scaled / universal / comprehensive (+0.29%, poorest -0.07%) |
+| Best regime, high returns | private / income-scaled / universal / selective (+5.68%, poorest +1.90%) | unchanged: the poorest gain too |
+| Technocrat against status quo, 50 worlds | central 15 L / 35 T; low 1 W / 49 L; high 50 T | unchanged |
+| Single AI (old Haiku runs) against technocrat, 10 worlds | 3 W / 6 L / 1 T | 2 W / 6 L / 2 T: one win came at the poorest fifth's expense |
+| Single AI against status quo | 2 W / 6 L / 2 T | 1 W / 6 L / 3 T |
+
+The regime search now ranks clean regimes by wins under the rule, then by final median. (The third look's technocrat figures, 14 losses and 49 losses, were already out of date before this change: the current code gives the numbers above under both rules.)
+
+**What it means:** selective schools stop winning under central assumptions, because the median gain they bring is paid for by the poorest fifth. Universal student support still appears in every set's best regime. Public provision now wins under both central and low returns, with income-scaled fees.
