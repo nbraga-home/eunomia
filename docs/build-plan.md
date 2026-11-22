@@ -31,8 +31,10 @@ Everything is in constant 2024 euros. Every stock is an index that starts at 1.
 5. **Taxes shrink their base.** A higher rate collects less than proportionally, because more is avoided. State capacity improves collection.
 6. **Leakage.** Part of every budget line is lost before delivery. State capacity reduces it.
 7. **Prices.** Energy, food and the consumption tax raise the household price index, which lowers real income.
-8. **Debt.** Interest is charged at a market rate (world rate + spread that rises with debt + financial stress). Inflation shrinks real debt each year. *This fixes the units bug found in spec v2.*
+8. **Debt.** Interest is charged at a market rate (world rate + a spread for the credit rating + financial stress). Inflation shrinks real debt each year. *This fixes the units bug found in spec v2.* A rating agency reviews once a year (second look).
 9. **People.** Working-age population and household count follow fixed yearly rates from the pack.
+10. **Sectors** (since the seventh look). Six sectors split their money into a management share and front-line money; management quality and an absorption limit decide how much front-line money builds the sector's stock. See `sectors-and-levers.md`.
+11. **Education** (since the eighth and ninth looks). Skills by income fifth across generations, coverage and quality driven by household demand and the parents' schooling, wages by fifth following skills, and five regime choices. See `sectors-and-levers.md`.
 
 **Score.** Real disposable income of the median household (the middle fifth), in the final year and in the worst year. Floors first, then income, as in the design notes.
 
@@ -45,26 +47,30 @@ Everything is in constant 2024 euros. Every stock is an index that starts at 1.
 | Technocrat | A short script: steady shift toward long-term investment, debt kept on a declining path | Does a language model add anything over a sensible rule? |
 | Single AI | One model, one mandate | First AI run |
 | Three branches | The protocol from the design notes | The show |
+| Replay | Re-enacts the decisions recorded in a run folder | Rescoring AI runs under corrected rules, with no model calls |
 
 ## Tools
 
-- `eunomia run` — one run, writes a folder with `years.csv` and `summary.json`.
-- `eunomia pair` — two occupants over a list of seeds, writes the comparison as CSV.
-- `eunomia returns` — **the returns table**: for each budget line, the effect on output and median income at years 5, 10 and 20 of spending an extra 1% of GDP, under each assumption set. This is how a non-economist judges the model.
+- `eunomia run` — one run, writes a folder with `years.csv`, `summary.json`, `decisions.json`, `feed.json`, `progress.log`, and for AI occupants `transcripts.jsonl` and `deliberations.md`. `--occupant replay --from <run folder>` re-enacts recorded decisions.
+- `eunomia pair` — two occupants over a list of seeds and sets, writes the comparison as CSV.
+- `eunomia returns` — **the returns table**: for each budget line, the effect on output and median income at years 5, 10, 20, 30 and 40 of spending an extra 1% of GDP, under each assumption set. This is how a non-economist judges the model.
+- `eunomia compare` — replays recorded AI runs against a scripted government in the same worlds.
+- `eunomia regimes` — the education regime search: every regime combination on a scripted budget, across worlds and sets.
+- Common options: `--horizon`, `--model` (single AI), `--models exec,legislature,judiciary` (three branches), `--config`, `--pack`.
 
 ## Steps
 
 Each step ends green (builds, tests pass) and is committed.
 
-1. Solution skeleton, configuration loading, seeded random generator.
-2. World generator: series and events.
-3. Economy model with the frozen occupant; one run writes CSV. Steady-state and direction tests.
-4. Status quo and technocrat; `pair` and the returns table. **First look: does it feel plausible?**
-5. Single AI through a vendor CLI, then three branches. **Second look: is it fun to read?**
-6. A crude map viewer.
-7. Realism, only where steps 4 and 5 showed it was missing.
+1. Solution skeleton, configuration loading, seeded random generator. *Done.*
+2. World generator: series and events. *Done.*
+3. Economy model with the frozen occupant; one run writes CSV. Steady-state and direction tests. *Done.*
+4. Status quo and technocrat; `pair` and the returns table. **First look: does it feel plausible?** *Done.*
+5. Single AI through a vendor CLI, then three branches. **Second look: is it fun to read?** *Done.*
+6. A crude map viewer. *Not started.*
+7. Realism, only where steps 4 and 5 showed it was missing. *Under way, following the order of work in `sectors-and-levers.md` (steps 1 to 3 of 7 done).*
 
-## Next realism step: management quality (planned Nov 22, 2026, not built)
+## Next realism step: management quality (planned Nov 22, 2026; built as step 1 of `sectors-and-levers.md`, seventh look)
 
 **The gap.** The toy is almost all budget allocation: a euro for health does the same work whether the health system is well or badly run. The only management idea is one national state-capacity index, which acts on leakage, tax collection and the reallocation limit. In real public systems, outcomes are often limited by management (scheduling, staffing, procurement, information systems, approvals) more than by money or medical competence.
 
