@@ -6,6 +6,7 @@
   "households": 4.2e6,
   "debt": 270e9,
   "effectiveRate": 0.022,
+  "rating": "A-",
   "workingAgeGrowth": -0.004,
   "householdGrowth": 0.002,
   "farmShare": 0.025,

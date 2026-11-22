@@ -18,6 +18,8 @@ public sealed record FeedRow
     public required IReadOnlyList<string> StartingEvents { get; init; }
     /// <summary>True when a crisis-flagged event starts this year.</summary>
     public required bool Crisis { get; init; }
+    /// <summary>True while any crisis-flagged event is active. The EU escape clause applies.</summary>
+    public required bool CrisisActive { get; init; }
 }
 
 public static class WorldGenerator
@@ -81,6 +83,7 @@ public static class WorldGenerator
                 ActiveEvents = active.Select(a => a.Name).ToList(),
                 StartingEvents = starting,
                 Crisis = crisis,
+                CrisisActive = active.Any(a => a.Crisis),
             };
             rows.Add(row);
             previousStress = row.FinancialStress;
@@ -102,6 +105,7 @@ public static class WorldGenerator
             ActiveEvents = [],
             StartingEvents = [],
             Crisis = false,
+            CrisisActive = false,
         }).ToList();
 
     private static double Step(SeriesParams p, double x, double epsilon) => p.Kind switch

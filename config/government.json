@@ -11,7 +11,11 @@
   "reallocationAllowance": 0.05,
   "floors": {
     "debt":              { "enabled": true, "maxInterestShareOfRevenue": 0.20, "rateCeiling": 0.12 },
-    "incomeGroups":      { "enabled": true, "minShareOfStart": 0.80 },
+    // EU fiscal rules, simplified: deficit under 3%, and debt above 60% falling on average over 4 years
+    // (1 point a year above 90%, half a point between 60% and 90%). Crisis years fall under the escape clause.
+    "fiscalRules":       { "enabled": true, "deficitLimit": 0.03, "debtReference": 0.60, "highDebt": 0.90,
+                           "requiredDeclineHigh": 0.01, "requiredDeclineMid": 0.005, "windowYears": 4 },
+    "incomeGroups":     { "enabled": true, "minShareOfStart": 0.80 },
     "endStateStocks":    { "enabled": true, "threshold": 0.98 },
     "endStatePipelines": { "enabled": true, "share": 0.95 }
   },

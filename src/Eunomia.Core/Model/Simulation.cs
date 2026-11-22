@@ -70,15 +70,17 @@ public sealed class Simulation
         _stability = new Stock(_e.Stocks.Stability, Baseline(BudgetLine.Security));
         _capital = new Stock(_e.Stocks.PrivateCapital, opening.Investment);
 
+        _agency = new RatingAgency(_e.Rating, _pack.Rating);
         double openingInterest = _effectiveRate * _debt;
         _opening = Record(-1, opening, _pack.Policy, false, _openingWorld,
             interest: openingInterest,
             deficit: opening.TotalPaid + openingInterest - opening.Revenue,
-            debt: _debt, marketRate: MarketRate(_debt, opening.Output, _openingWorld), growth: 0);
+            debt: _debt, marketRate: MarketRate(_openingWorld), growth: 0, ratingAction: null);
         _groupStart = opening.GroupIncome;
     }
 
     private readonly double[] _groupStart;
+    private readonly RatingAgency _agency;
 
     public YearRecord Opening => _opening;
 
@@ -129,18 +131,27 @@ public sealed class Simulation
             double interest = _effectiveRate * _debt;
             double deficit = flows.TotalPaid + interest - flows.Revenue;
             double closingDebt = (_debt + deficit) / (1 + _e.Inflation);
-            double marketRate = MarketRate(closingDebt, flows.Output, world);
+            double marketRate = MarketRate(world); // lenders price the rating in force during the year
+            double growth = flows.Output / _previous.Output - 1;
 
-            var record = Record(year, flows, _enacted, carried, world, interest, deficit, closingDebt, marketRate,
-                growth: flows.Output / _previous.Output - 1);
+            // 4. The rating agency reviews the year. Its verdict moves next year's borrowing rate.
+            var recentGrowth = years.TakeLast(2).Select(y => y.OutputGrowth).Append(growth).ToList();
+            double target = _agency.Target(
+                debtRatio: closingDebt / flows.Output,
+                deficitRatio: deficit / flows.Output,
+                debtChange: closingDebt / flows.Output - history[^1].DebtRatio,
+                averageGrowth: recentGrowth.Average());
+            string? action = _agency.Review(target);
+
+            var record = Record(year, flows, _enacted, carried, world, interest, deficit, closingDebt, marketRate, growth, action);
             years.Add(record);
             history.Add(record);
-            CheckYearlyFloors(record, breaches);
+            CheckYearlyFloors(record, history, breaches);
 
             _debt = closingDebt;
             _effectiveRate += (marketRate - _effectiveRate) / _e.Borrowing.AverageMaturityYears;
 
-            // 4. Stocks: this year's delivered spending enters the pipelines.
+            // 5. Stocks: this year's delivered spending enters the pipelines.
             _skills.Advance(flows.Delivered[(int)BudgetLine.Education]);
             _health.Advance(flows.Delivered[(int)BudgetLine.Health]);
             _infrastructure.Advance(flows.Delivered[(int)BudgetLine.Infrastructure]);
@@ -149,7 +160,7 @@ public sealed class Simulation
             _stability.Advance(flows.Delivered[(int)BudgetLine.Security]);
             _capital.Advance(flows.Investment);
 
-            // 5. Trend and people
+            // 6. Trend and people
             _productivity *= 1 + _e.TrendProductivityGrowth;
             _labour *= 1 + _pack.WorkingAgeGrowth;
             _households *= 1 + _pack.HouseholdGrowth;
@@ -368,18 +379,40 @@ public sealed class Simulation
     private double Loss(double stability) =>
         Math.Clamp(_e.Loss.Base * Math.Pow(stability, -_e.Loss.StabilityExponent), 0, _e.Loss.Max);
 
-    private double MarketRate(double debt, double output, FeedRow world)
+    /// <summary>The rate on new borrowing: world rate, a constant, the spread for the current rating, and financial stress.</summary>
+    private double MarketRate(FeedRow world)
     {
         var b = _e.Borrowing;
-        double excess = Math.Max(0, debt / output - b.DebtThreshold);
-        return world.ExternalRate + b.SpreadConstant + b.SpreadSlope * excess * excess + b.StressCoefficient * world.FinancialStress;
+        return world.ExternalRate + b.SpreadConstant + _agency.Spread + b.StressCoefficient * world.FinancialStress;
     }
 
     // ---------------- Floors ----------------
 
-    private void CheckYearlyFloors(YearRecord r, List<Breach> breaches)
+    private void CheckYearlyFloors(YearRecord r, IReadOnlyList<YearRecord> history, List<Breach> breaches)
     {
         var f = _rules.Floors;
+        var eu = f.FiscalRules;
+        if (eu.Enabled && !r.EscapeClause)
+        {
+            if (r.DeficitRatio > eu.DeficitLimit + 1e-9)
+                breaches.Add(new Breach("fiscalRules", r.Year, r.CarriedOver, $"deficit {r.DeficitRatio:P1} above {eu.DeficitLimit:P0}"));
+
+            // Debt above the reference must fall on average over the window. history[^1] is this year.
+            int window = eu.WindowYears;
+            if (history.Count > window)
+            {
+                var then = history[^(window + 1)];
+                bool escapeInWindow = history.TakeLast(window).Any(y => y.EscapeClause);
+                if (!escapeInWindow && r.DebtRatio > eu.DebtReference && then.DebtRatio > eu.DebtReference)
+                {
+                    double required = (then.DebtRatio > eu.HighDebt ? eu.RequiredDeclineHigh : eu.RequiredDeclineMid) * window;
+                    double change = r.DebtRatio - then.DebtRatio;
+                    if (change > -required + 1e-9)
+                        breaches.Add(new Breach("fiscalRules", r.Year, r.CarriedOver,
+                            $"debt ratio moved {change * 100:+0.0;-0.0} points in {window} years, rules require at least -{required * 100:0.0}"));
+                }
+            }
+        }
         if (f.Debt.Enabled)
         {
             if (r.Revenue <= 0 || r.InterestShareOfRevenue > f.Debt.MaxInterestShareOfRevenue)
@@ -416,8 +449,12 @@ public sealed class Simulation
     // ---------------- Records ----------------
 
     private YearRecord Record(int year, Flows f, Policy policy, bool carried, FeedRow world,
-        double interest, double deficit, double debt, double marketRate, double growth) => new()
+        double interest, double deficit, double debt, double marketRate, double growth, string? ratingAction) => new()
     {
+        Rating = _agency.Rating,
+        Outlook = _agency.Outlook,
+        RatingAction = ratingAction,
+        EscapeClause = world.CrisisActive,
         Year = year,
         Output = f.Output,
         OutputGrowth = growth,

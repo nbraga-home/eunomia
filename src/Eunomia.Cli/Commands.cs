@@ -69,7 +69,7 @@ public static class Commands
             finalDiffs.Sort();
             Console.WriteLine($"{set,-12} {outcomes.Count(o => o == Outcome.AWins),7} {outcomes.Count(o => o == Outcome.BWins),7} " +
                 $"{outcomes.Count(o => o == Outcome.TradeOff),10} {outcomes.Count(o => o == Outcome.BothBreached),14}   " +
-                $"{"",21}{finalDiffs[0],7:+0.0%;-0.0%} {finalDiffs[finalDiffs.Count / 2],7:+0.0%;-0.0%} {finalDiffs[^1],7:+0.0%;-0.0%}");
+                $"{"",21}{Pct1(finalDiffs[0]),7} {Pct1(finalDiffs[finalDiffs.Count / 2]),7} {Pct1(finalDiffs[^1]),7}");
         }
 
         string outPath = a.Get("out", Path.Combine(RepoRoot(), "runs", $"pair-{nameA}-{nameB}.csv"));
@@ -99,7 +99,7 @@ public static class Commands
         {
             var frozen = new Simulation(config, set, feed).Run(new Frozen());
             Console.WriteLine($"[{set}]");
-            Console.WriteLine($"  {"line",-16}" + string.Concat(checkpoints.Select(y => $"{"year " + y,18}")) + $"{"debt ratio y20",16}");
+            Console.WriteLine($"  {"line",-16}" + string.Concat(checkpoints.Select(y => $"{"year " + y,18}")) + $"{"debt ratio y20",16}  {"rating y20",-11}floors breached (first year)");
             foreach (var line in BudgetLines.All)
             {
                 var probe = new Simulation(config, set, feed).Run(new ReturnsProbe(line, extra));
@@ -112,9 +112,11 @@ public static class Commands
                     sb.Append($"{Pct(od),9}/{Pct(md),-8}");
                     csv.Append(string.Join(',', set, line, y, F(od), F(md), F(p.GroupIncome[0] / f.GroupIncome[0] - 1), F(p.DebtRatio - f.DebtRatio))).Append('\n');
                 }
-                sb.Append($"{probe.Years[^1].DebtRatio - frozen.Years[^1].DebtRatio,16:+0.0%;-0.0%}");
+                sb.Append($"{probe.Years[^1].DebtRatio - frozen.Years[^1].DebtRatio,16:+0.0%;-0.0%}  {probe.Years[^1].Rating,-11}");
+                sb.Append(FirstBreaches(probe.Summary));
                 Console.WriteLine(sb.ToString());
             }
+            Console.WriteLine($"  {"(frozen)",-16}{"",54}{frozen.Years[^1].DebtRatio,16:0.0%}  {frozen.Years[^1].Rating,-11}{FirstBreaches(frozen.Summary)}");
             Console.WriteLine();
         }
 
@@ -125,9 +127,14 @@ public static class Commands
         return 0;
     }
 
+    /// <summary>Each breached floor once, with the year it was first breached.</summary>
+    private static string FirstBreaches(RunSummary s) => s.Breaches.Count == 0 ? "none" :
+        string.Join(", ", s.Breaches.GroupBy(b => b.Floor).Select(g => $"{g.Key} y{g.Min(b => b.Year) + 1}"));
+
     private static string Breaches(RunSummary s) => string.Join("; ", s.Breaches.Select(b => $"{b.Floor} y{b.Year}"));
     private static string Quote(string s) => s.Length == 0 ? "" : $"\"{s}\"";
     private static string Pct(double x) => Math.Abs(x) < 0.00005 ? "0.00%" : x.ToString("+0.00%;-0.00%", Inv);
+    private static string Pct1(double x) => Math.Abs(x) < 0.0005 ? "0.0%" : x.ToString("+0.0%;-0.0%", Inv);
     private static string F(double x) => x.ToString("G6", Inv);
 
     internal static IReadOnlyList<FeedRow> Feed(SimulationConfig config, ulong? seed) =>

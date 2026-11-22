@@ -20,11 +20,27 @@
   "investmentShareOfProfit": 0.60,
   "priceWeights": { "energy": 0.08, "food": 0.15 },
   "inflation": 0.02,
+  // Borrowing rate = world rate + constant + rating spread + stress coefficient x financial stress.
   "borrowing": {
-    "spreadConstant": 0.005,
-    "spreadSlope": 0.5,
-    "debtThreshold": 0.9,
+    "spreadConstant": 0.002,
     "stressCoefficient": 0.02,
     "averageMaturityYears": 7
+  },
+  // One composite rating agency. The constant is set so Portugal today scores about A-.
+  // Rough check: debt 110%, deficit 7%, debt rising 10 points a year, growth -1.7% (Portugal 2011) scores about BB.
+  "rating": {
+    "scale": ["AAA", "AA+", "AA", "AA-", "A+", "A", "A-", "BBB+", "BBB", "BBB-", "BB+", "BB", "BB-", "B+", "B", "B-", "CCC"],
+    "junkFrom": 10,
+    "constant": -0.2,
+    "debtWeight": 7.0,
+    "deficitWeight": 0.25,
+    "trendWeight": 0.2,
+    "growthWeight": 0.3,
+    "growthReference": 0.015,
+    "outlookGap": 0.5,
+    "crisisGap": 2.5,
+    "spreadPerNotch": 0.0015,
+    "junkCliff": 0.02,
+    "junkSpreadPerNotch": 0.006
   }
 }

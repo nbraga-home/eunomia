@@ -82,6 +82,24 @@ Each step ends green (builds, tests pass) and is committed.
 
 What this says: under this model and this score, **handing out borrowed money beats every investment for the median household within 20 years, even under high returns.** The debt it leaves (about +14% of output) breaches no floor. Agriculture, a tiny line, pays about as well as education: the stock-size artefact predicted from spec v2.
 
+## Second look: rating agency and EU fiscal rules (Nov 22, 2026, unvalidated)
+
+Added a composite rating agency (stepped ratings, outlook warnings, a two-notch crisis cut, a spread cliff below investment grade, calibrated so Portugal today scores about A- and Portugal 2011 about BB) and the EU fiscal rules as a switchable floor (deficit under 3%, debt above 60% falling on average over 4 years, escape clause in crisis years). The rating replaces the old debt-level spread curve.
+
+Borrowing for transfers, against frozen (central set):
+
+| Extra per year | Median, year 20 | Rating, year 20 | Floors |
+| --- | --- | --- | --- |
+| 0 (frozen) | — | AA- | none |
+| 1% of output | +1.23% | A+ | none |
+| 2% | +2.43% | A- | EU rules breached in year 4 |
+| 3% | +3.62% | BBB+ | EU rules breached in year 4 |
+| 5% | +4.98% | BB+ (junk) | EU rules breached in year 1 |
+
+Pairs over 50 worlds per set: the technocrat still loses to the status quo in 47 to 49 of 50 worlds. The status quo itself breaks the EU rules in 2 of 50 worlds.
+
+What changed: the EU rules now cap borrowed redistribution at roughly 1 to 2% of output a year, which is about the room Portugal really has. What did not change: inside that room, transfers still beat every investment for the median household within 20 years. The question of what the score rewards (debt and stocks handed on, or output alongside the median) is still open.
+
 ## Known questions to answer by running, not by writing
 
 - Is a line's return driven by its size today rather than by evidence? (Spec v2 finding: stocks assume today's spending has held forever.)

@@ -56,13 +56,38 @@ public sealed record PriceWeights
     public required double Food { get; init; }
 }
 
+/// <summary>Borrowing rate = world rate + constant + rating spread + stress coefficient × financial stress.</summary>
 public sealed record BorrowingParams
 {
     public required double SpreadConstant { get; init; }
-    public required double SpreadSlope { get; init; }
-    public required double DebtThreshold { get; init; }
     public required double StressCoefficient { get; init; }
     public required double AverageMaturityYears { get; init; }
+}
+
+/// <summary>
+/// The rating agency. Target notch = constant + debt weight × debt ratio + deficit weight × deficit (points)
+/// + trend weight × yearly change in the debt ratio (points) + growth weight × (reference − 3-year growth) (points).
+/// </summary>
+public sealed record RatingParams
+{
+    /// <summary>Best first. Index 0 is AAA.</summary>
+    public required IReadOnlyList<string> Scale { get; init; }
+    /// <summary>Index of the first rating below investment grade.</summary>
+    public required int JunkFrom { get; init; }
+    public required double Constant { get; init; }
+    public required double DebtWeight { get; init; }
+    public required double DeficitWeight { get; init; }
+    public required double TrendWeight { get; init; }
+    public required double GrowthWeight { get; init; }
+    public required double GrowthReference { get; init; }
+    /// <summary>Gap in notches that triggers an outlook change (and a move at the next review).</summary>
+    public required double OutlookGap { get; init; }
+    /// <summary>Gap in notches that triggers an immediate two-notch cut.</summary>
+    public required double CrisisGap { get; init; }
+    public required double SpreadPerNotch { get; init; }
+    /// <summary>Extra spread when the rating falls below investment grade: many lenders must sell.</summary>
+    public required double JunkCliff { get; init; }
+    public required double JunkSpreadPerNotch { get; init; }
 }
 
 public sealed record EconomyConfig
@@ -82,6 +107,7 @@ public sealed record EconomyConfig
     /// <summary>Yearly inflation. Money is in constant prices, so inflation shrinks real debt.</summary>
     public required double Inflation { get; init; }
     public required BorrowingParams Borrowing { get; init; }
+    public required RatingParams Rating { get; init; }
 
     /// <summary>Applies a named assumption set: scales the returns on skills, health, infrastructure and farm productivity.</summary>
     public EconomyConfig WithReturnsMultiplier(double m) => this with
@@ -189,9 +215,28 @@ public sealed record EndStatePipelinesFloor
     public required double Share { get; init; }
 }
 
+/// <summary>
+/// The EU fiscal rules, simplified. The deficit stays under its limit, and debt above the reference must fall
+/// on average over the window: faster when it is above the high threshold. Years with a crisis-flagged event
+/// active fall under the escape clause.
+/// </summary>
+public sealed record FiscalRulesFloor
+{
+    public required bool Enabled { get; init; }
+    public required double DeficitLimit { get; init; }
+    public required double DebtReference { get; init; }
+    public required double HighDebt { get; init; }
+    /// <summary>Required average yearly fall in the debt ratio when it is above the high threshold.</summary>
+    public required double RequiredDeclineHigh { get; init; }
+    /// <summary>Required average yearly fall between the reference and the high threshold.</summary>
+    public required double RequiredDeclineMid { get; init; }
+    public required int WindowYears { get; init; }
+}
+
 public sealed record Floors
 {
     public required DebtFloor Debt { get; init; }
+    public required FiscalRulesFloor FiscalRules { get; init; }
     public required IncomeGroupFloor IncomeGroups { get; init; }
     public required EndStateStocksFloor EndStateStocks { get; init; }
     public required EndStatePipelinesFloor EndStatePipelines { get; init; }
@@ -231,6 +276,8 @@ public sealed record CountryPack
     public required double Households { get; init; }
     public required double Debt { get; init; }
     public required double EffectiveRate { get; init; }
+    /// <summary>Credit rating at the start, on the scale in economy.json.</summary>
+    public required string Rating { get; init; }
     public required double WorkingAgeGrowth { get; init; }
     public required double HouseholdGrowth { get; init; }
     public required double FarmShare { get; init; }

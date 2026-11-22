@@ -35,6 +35,12 @@ public sealed record YearRecord
     public required double MarketRate { get; init; }
     public required double EffectiveRate { get; init; }
     public double InterestShareOfRevenue => Revenue > 0 ? Interest / Revenue : double.PositiveInfinity;
+    /// <summary>The rating in force after this year's review, its outlook, and what the agency announced (null if nothing).</summary>
+    public required string Rating { get; init; }
+    public required Outlook Outlook { get; init; }
+    public string? RatingAction { get; init; }
+    /// <summary>True when a crisis-flagged event was active: the EU escape clause applies.</summary>
+    public required bool EscapeClause { get; init; }
     public required double LeakageRate { get; init; }
     public required double CollectionRate { get; init; }
 
