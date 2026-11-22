@@ -82,7 +82,7 @@ Coverage for each level and group rises with:
 - the compulsory schooling rule, which sets a floor for basic and secondary levels;
 - a lower net cost to families (fees minus grants);
 - higher quality, which raises what schooling is worth;
-- access, meaning places available and, once regions exist, distance;
+- access: once regions exist, distance to school;
 - the group's own propensity, taken from data and never treated as the state's achievement;
 - **the parents' schooling:** each group's propensity rises with its own past skills, because children of schooled parents tend to stay in school longer. This gives the 40-year horizon its own momentum: a generation schooled today raises the next one's demand for schooling. It also amplifies every other assumption, so its strength is spanned by the named sets.
 
