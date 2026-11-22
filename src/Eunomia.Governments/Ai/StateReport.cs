@@ -37,6 +37,8 @@ public static class StateReport
         sb.AppendLine($"- Management shares between {P(r.ManagementShareBounds.Min)} and {P(r.ManagementShareBounds.Max)} of a line; each can move at most {Pts(r.MaxManagementChangePerYear)} per year.");
         sb.AppendLine("- Each sector can absorb only so much growth in its front-line money in a year (see Sectors). Money above that is paid out but mostly wasted.");
         sb.AppendLine("- Part of every line is lost before delivery (leakage). Lenders price the country's credit rating, which an agency reviews once a year.");
+        if (r.Resistance.Enabled)
+            sb.AppendLine($"- Resistance: cutting a sector's real spending by more than {P(r.Resistance.CutThreshold)} in a year, or changing the education regime, brings strikes that cost output that year.");
         sb.AppendLine();
         sb.AppendLine("## Floors (breaching any one loses the run, whatever the income)");
         if (f.Debt.Enabled) sb.AppendLine($"- Debt stays payable: interest at most {P(f.Debt.MaxInterestShareOfRevenue)} of revenue, borrowing rate at most {P(f.Debt.RateCeiling)}.");

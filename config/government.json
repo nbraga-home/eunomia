@@ -26,5 +26,7 @@
   },
   // The constitution: set by the player before a run, never changed by a government.
   "constitution": { "compulsoryAge": 18 },
+  // Resistance to policies (strikes), identical for every government. Off by default.
+  "resistance": { "enabled": false, "cutThreshold": 0.05, "lossPerCut": 0.5, "regimeChangeLoss": 0.002 },
   "scoreTolerance": 0.001
 }

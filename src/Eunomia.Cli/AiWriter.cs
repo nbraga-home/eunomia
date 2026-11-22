@@ -70,6 +70,7 @@ public static class AiWriter
             sb.Append($"*Result:* growth {P(year.OutputGrowth)}, median {E(year.MedianIncome)} ({Change(year.MedianIncome, before.MedianIncome)}), ");
             sb.Append($"deficit {P(year.DeficitRatio)}, debt {P(year.DebtRatio)}, rating {year.Rating}");
             if (year.RatingAction is not null) sb.Append($" — agency {year.RatingAction}");
+            if (year.Protests.Count > 0) sb.Append($"; {string.Join(", ", year.Protests)} (output {P(-year.StrikeLoss)})");
             sb.Append(".\n\n");
         }
         return sb.ToString();

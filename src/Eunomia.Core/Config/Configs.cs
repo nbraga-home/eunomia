@@ -377,6 +377,20 @@ public sealed record Floors
     public required RightToEducationFloor RightToEducation { get; init; }
 }
 
+/// <summary>
+/// Resistance to policies, never to the AI as such, applied identically to every occupant. A sector whose real
+/// spending is cut by more than the threshold in a year strikes: output that year falls by lossPerCut × (cut beyond
+/// the threshold) × (the sector's spending as a share of output). Each education regime change costs regimeChangeLoss
+/// of output that year. Social transfers are exempt: their cuts bring protest, not lost output.
+/// </summary>
+public sealed record ResistanceRules
+{
+    public required bool Enabled { get; init; }
+    public required double CutThreshold { get; init; }
+    public required double LossPerCut { get; init; }
+    public required double RegimeChangeLoss { get; init; }
+}
+
 /// <summary>Rules the player sets before a run and no government can change.</summary>
 public sealed record Constitution
 {
@@ -397,6 +411,7 @@ public sealed record GovernmentConfig
     public required double MaxManagementChangePerYear { get; init; }
     public required Floors Floors { get; init; }
     public required Constitution Constitution { get; init; }
+    public required ResistanceRules Resistance { get; init; }
     public required double ScoreTolerance { get; init; }
 }
 

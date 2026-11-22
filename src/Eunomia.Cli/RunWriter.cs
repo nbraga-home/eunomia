@@ -82,6 +82,8 @@ public static class RunWriter
         ("earmark", r => r.EarmarkActive),
         ("privateShare", r => r.PrivateShare),
         ("basicMin", r => r.BasicByFifth.Min()),
+        ("strikeLoss", r => r.StrikeLoss),
+        ("protests", r => string.Join("; ", r.Protests)),
         ("taxIncome", r => r.Policy.Taxes.Income),
         ("taxCorporate", r => r.Policy.Taxes.Corporate),
         ("taxConsumption", r => r.Policy.Taxes.Consumption),

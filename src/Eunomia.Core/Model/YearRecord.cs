@@ -70,6 +70,9 @@ public sealed record YearRecord
     /// <summary>Share of pupils in private schools, and whether an education earmark holds.</summary>
     public required double PrivateShare { get; init; }
     public required bool EarmarkActive { get; init; }
+    /// <summary>Share of output lost to strikes this year (resistance switch), and what triggered them.</summary>
+    public double StrikeLoss { get; init; }
+    public IReadOnlyList<string> Protests { get; init; } = [];
     /// <summary>Each line's efficiency (management index ^ exponent, capped), in budget-line order; 1 for social transfers.</summary>
     public required IReadOnlyList<double> Efficiency { get; init; }
 

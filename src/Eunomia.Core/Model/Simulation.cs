@@ -129,6 +129,7 @@ public sealed class Simulation
                 Rules = _rules,
                 Check = Check,
             };
+            var regimeBefore = _enacted.EducationRegime!;
             var proposal = government.Decide(context);
             var check = proposal is null ? null : Check(proposal);
             bool carried = check is null || !check.Ok;
@@ -149,7 +150,8 @@ public sealed class Simulation
 
             // 2. The year itself
             double envelope = Math.Max(0, Envelope(_enacted));
-            var flows = Evaluate(_enacted, world, envelope, _previous);
+            var (strikeLoss, protests) = Resistance(envelope, regimeBefore);
+            var flows = Evaluate(_enacted, world, envelope, _previous, strikeLoss);
 
             // 3. Debt. Interest at the nominal market rate; inflation shrinks the real value of the debt.
             double interest = _effectiveRate * _debt;
@@ -167,7 +169,11 @@ public sealed class Simulation
                 averageGrowth: recentGrowth.Average());
             string? action = _agency.Review(target);
 
-            var record = Record(year, flows, _enacted, carried, world, interest, deficit, closingDebt, marketRate, growth, action);
+            var record = Record(year, flows, _enacted, carried, world, interest, deficit, closingDebt, marketRate, growth, action) with
+            {
+                StrikeLoss = strikeLoss,
+                Protests = protests,
+            };
             years.Add(record);
             history.Add(record);
             CheckYearlyFloors(record, history, breaches);
@@ -332,6 +338,36 @@ public sealed class Simulation
         _educationFlows = money;
     }
 
+    /// <summary>
+    /// Resistance to this year's policy, if the switch is on: strikes in sectors whose real spending is cut by more
+    /// than the threshold, and in education when its regime changes. Returns the share of output lost and what happened.
+    /// </summary>
+    private (double Loss, IReadOnlyList<string> Protests) Resistance(double envelope, EducationRegime regimeBefore)
+    {
+        var r = _rules.Resistance;
+        if (!r.Enabled) return (0, []);
+        double loss = 0;
+        var protests = new List<string>();
+        foreach (var line in ManagementShares.Lines)
+        {
+            double before = _previous.Delivered[(int)line];
+            double planned = Delivered(_enacted.BudgetShares[line] * Math.Max(0, envelope));
+            double cut = before > 0 ? 1 - planned / before : 0;
+            if (cut > r.CutThreshold)
+            {
+                loss += r.LossPerCut * (cut - r.CutThreshold) * before / _previous.Output;
+                protests.Add($"{line.ToString().ToLowerInvariant()} strike over a {cut:P0} cut");
+            }
+        }
+        int changes = _enacted.EducationRegime!.Changes(regimeBefore);
+        if (changes > 0)
+        {
+            loss += r.RegimeChangeLoss * changes;
+            protests.Add($"education strike over {changes} regime change(s)");
+        }
+        return (Math.Min(loss, 0.5), protests);
+    }
+
     /// <summary>What reaches the sector of an appropriation, after leakage at today's state capacity.</summary>
     private double Delivered(double appropriation) => appropriation * (1 - Leakage(_capacity.Value));
 
@@ -394,7 +430,7 @@ public sealed class Simulation
         public double Revenue => RevenueIncome + RevenueCorporate + RevenueConsumption;
     }
 
-    private Flows Evaluate(Policy policy, FeedRow world, double envelope, Flows? previous)
+    private Flows Evaluate(Policy policy, FeedRow world, double envelope, Flows? previous, double strikeLoss = 0)
     {
         double capacity = _capacity?.Value ?? 1; // stocks do not exist yet while the opening year is solved
         double leakage = Leakage(capacity);
@@ -422,7 +458,7 @@ public sealed class Simulation
             * farm;
         double impulse = previous is null ? 0 : (purchases - previous.Purchases) / previous.Output;
         double demand = 1 + _e.ExternalExposure * (world.ExportDemand - 1) + _e.FiscalMultiplier * impulse;
-        double output = potential * demand * (1 - Loss(_stability?.Value ?? 1));
+        double output = potential * demand * (1 - Loss(_stability?.Value ?? 1)) * (1 - strikeLoss);
 
         // Firms
         double wages = (1 - alpha) * output;
