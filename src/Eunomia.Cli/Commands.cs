@@ -16,13 +16,23 @@ public static class Commands
     {
         var (config, settings) = LoadConfig(a);
         string set = a.Get("set", "central");
-        var government = Occupants.Create(a.Get("occupant", "frozen"), settings);
+        string occupant = a.Get("occupant", "frozen");
         ulong? seed = a.Has("flat") ? null : ulong.Parse(a.Get("seed", "1"));
+        string label = seed is null ? "flat" : $"s{seed}";
+        string outDir = a.Get("out", Path.Combine(RepoRoot(), "runs", $"{occupant}-{set}-{label}"));
+        Directory.CreateDirectory(outDir);
+
+        // Progress goes to the console and to progress.log, so a long AI run can be followed while it runs.
+        string progress = Path.Combine(outDir, "progress.log");
+        File.WriteAllText(progress, "");
+        settings = settings with { Log = line => { Console.Error.WriteLine(line); File.AppendAllText(progress, line + "\n"); } };
+
+        var government = occupant == "replay"
+            ? new ReplayDecisions(a.Get("from", ""))
+            : Occupants.Create(occupant, settings);
         var feed = Feed(config, seed);
 
         var run = new Simulation(config, set, feed).Run(government);
-        string label = seed is null ? "flat" : $"s{seed}";
-        string outDir = a.Get("out", Path.Combine(RepoRoot(), "runs", $"{government.Name}-{set}-{label}"));
         RunWriter.Write(outDir, run, feed, seed);
         if (government is Eunomia.Governments.Ai.ITranscribed ai)
             AiWriter.Write(outDir, run, ai, config.Pack.BaseYear, $"{government.Name} ({settings.Model}) / {set} / {label}");

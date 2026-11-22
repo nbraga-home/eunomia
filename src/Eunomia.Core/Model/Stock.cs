@@ -44,4 +44,7 @@ public sealed class Stock
 
     /// <summary>Yearly spending that would hold the stock at its current level.</summary>
     public double HoldingAmount => Value * _baseline;
+
+    /// <summary>Yearly spending that would hold the stock at <paramref name="level"/> in the long run.</summary>
+    public double HoldingAmountAt(double level) => level * _baseline;
 }

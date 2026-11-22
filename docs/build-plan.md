@@ -132,3 +132,20 @@ At 40 years the technocrat ends richer under central and high returns, but its w
 - ~~Can education ever pay back inside 20 years?~~ No; inside 40, yes (third look).
 - What do EU funds and rising pension costs change?
 - The population path is fixed. Over 40 years, Portugal's real working-age decline is likely steeper than 0.4% a year.
+
+## Fourth look: the first AI government (Nov 22, 2026, unvalidated, one world)
+
+Claude Haiku as the single AI, 40 years, world seed 1: 41 calls, one retry, no abstentions, about 15 to 30 seconds a decision.
+
+Its path: surpluses for twenty years paying debt from 95% to 50% of output; administration raised from 10.6% to 19% of the budget, education from 10% to 18%, transfers cut from 42% to about 33%; then, with debt low, income tax cut from 42% to 34% and deficits near 2.5%.
+
+| Government | Final median | Worst year | Poorest fifth, final | Debt, final |
+| --- | --- | --- | --- | --- |
+| Single AI (Haiku) | **€60,752** | **€39,559** | €43,281 | 49% |
+| Technocrat | €60,013 | €38,855 | €46,929 | 19% |
+| Frozen | €59,426 | €39,041 | €48,214 | 17% |
+| Status quo | €59,271 | €39,041 | €47,975 | 23% |
+
+The run first showed a breach of the end-state pipeline floor. That was a bug: the report said committed spending must hold each stock "there" (at 0.98 or above), while the code demanded it hold the stock at its current, higher level. The check now matches the stated rule, and replaying the recorded decisions (no model calls) gives a clean run that beats all three scripted governments on both scores, in this one world.
+
+Worth watching: the poorest fifth ends lower than under any scripted government. The median score does not protect it beyond its 80% floor.

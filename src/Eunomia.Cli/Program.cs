@@ -8,6 +8,7 @@ const string Help = """
     eunomia <command> [options]
 
       run      --occupant frozen|statusquo|technocrat|singleai  --seed 1 | --flat  --set central  --model claude-haiku  --out runs/name
+      run      --occupant replay --from runs/<folder> --seed 1   (re-enact recorded decisions, no model calls)
       pair     --a technocrat --b statusquo --seeds 1-20 --sets central,lowReturns,highReturns
       returns  --sets central,lowReturns,highReturns
 

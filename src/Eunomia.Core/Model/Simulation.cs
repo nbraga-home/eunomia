@@ -443,9 +443,12 @@ public sealed class Simulation
             if (!stock.Active) continue;
             if (f.EndStateStocks.Enabled && stock.Value < f.EndStateStocks.Threshold)
                 breaches.Add(new Breach("endStateStocks", last.Year, last.CarriedOver, $"{name} ends at {stock.Value:F3}"));
-            if (f.EndStatePipelines.Enabled && stock.Delay > 0 && stock.PipelineAverage < f.EndStatePipelines.Share * stock.HoldingAmount)
+            // The money already committed must keep the stock at the threshold or above in the long run.
+            // A stock built above the threshold may drift down toward it; that is not starving it.
+            double needed = f.EndStatePipelines.Share * stock.HoldingAmountAt(f.EndStateStocks.Threshold);
+            if (f.EndStatePipelines.Enabled && stock.Delay > 0 && stock.PipelineAverage < needed)
                 breaches.Add(new Breach("endStatePipelines", last.Year, last.CarriedOver,
-                    $"{name} pipeline holds {stock.PipelineAverage / stock.HoldingAmount:P1} of what keeps it level"));
+                    $"{name} pipeline holds {stock.PipelineAverage / stock.HoldingAmountAt(f.EndStateStocks.Threshold):P1} of what keeps it at {f.EndStateStocks.Threshold}"));
         }
     }
 

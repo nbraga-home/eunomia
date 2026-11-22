@@ -39,7 +39,7 @@ public static class StateReport
         if (f.Debt.Enabled) sb.AppendLine($"- Debt stays payable: interest at most {P(f.Debt.MaxInterestShareOfRevenue)} of revenue, borrowing rate at most {P(f.Debt.RateCeiling)}.");
         if (eu.Enabled) sb.AppendLine($"- EU fiscal rules: deficit at most {P(eu.DeficitLimit)} of output; debt above {P(eu.DebtReference)} must fall on average over {eu.WindowYears} years (at least {Pts(eu.RequiredDeclineHigh)} a year above {P(eu.HighDebt)}, {Pts(eu.RequiredDeclineMid)} between). Suspended in years with an active crisis.");
         if (f.IncomeGroups.Enabled) sb.AppendLine($"- No income fifth falls below {P(f.IncomeGroups.MinShareOfStart)} of its starting real income.");
-        if (f.EndStateStocks.Enabled) sb.AppendLine($"- In the final year, the skills, health, infrastructure and state capacity indices are at least {f.EndStateStocks.Threshold.ToString("0.00", Inv)}, and current spending on them is enough to hold them there.");
+        if (f.EndStateStocks.Enabled) sb.AppendLine($"- In the final year, the skills, health, infrastructure and state capacity indices are at least {f.EndStateStocks.Threshold.ToString("0.00", Inv)}, and the spending already committed to each is enough to keep it at {f.EndStateStocks.Threshold.ToString("0.00", Inv)} or above in the long run. A stock built above that level may drift down toward it.");
         sb.AppendLine();
         sb.AppendLine("## How you are judged");
         sb.AppendLine($"Real disposable income of the median household in year {ctx.HorizonYears}, and in the worst year along the way. A run that keeps every floor beats any run that breaks one.");

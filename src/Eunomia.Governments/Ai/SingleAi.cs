@@ -79,6 +79,7 @@ public sealed class SingleAi(IBranchModel model, string mandate, int memorySize 
             if (!check.Ok) { errors.AddRange(check.Errors); continue; }
 
             Remember(ctx, parsed);
+            Log?.Invoke($"  {ctx.BaseYear + 1 + ctx.Year} decided: {Shorten(parsed.Rationale, 240)}");
             _deliberations.Add(new Deliberation
             {
                 Year = ctx.Year, Proposed = parsed.Policy, Rationale = parsed.Rationale,
@@ -94,6 +95,8 @@ public sealed class SingleAi(IBranchModel model, string mandate, int memorySize 
         });
         return null;
     }
+
+    private static string Shorten(string s, int n) => s.Length <= n ? s : s[..n] + "...";
 
     private void Remember(MeetingContext ctx, ParsedReply p) =>
         _memory.Add($"{ctx.BaseYear + 1 + ctx.Year}: {p.Rationale} Expected: {p.Expectations}");
