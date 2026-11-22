@@ -29,6 +29,7 @@ Version one is a pure simulation with AI in charge of a small country, watched o
 | Levers | Fiscal only: taxes, budget shares, borrowing | Policy switches, external actions |
 | Information | Perfect: true values, no delay | Late, noisy, revised figures |
 | Branches | Three models, different mandates, same report | Separate information per branch |
+| Delegation | The three branches only | AI ministers, then an organisation designed by the models |
 | Decisions | Executive and legislature both sign; the judiciary alone can block a floor breach | Mechanical veto, all three for use of force |
 | Approval | Displayed, no effect | Strikes and unrest |
 | Interface | Headless core, then the map | Player controls |
@@ -101,6 +102,35 @@ Each branch owns a different time horizon: the executive the future, the legisla
 
 - The dissent sentence is deliberate. Language models drift toward consensus, and without permission to refuse they sign each other's proposals.
 - The texts are short on purpose, with no instruction to compromise. The round limit and the budget carry-over supply that pressure.
+
+## Delegation
+
+Version one is a government that allocates funds. The intent is a government that runs things: the branches set the frame, and more specific offices run each area. How deep that goes follows one rule.
+
+**The rule.** A layer of AI exists only if it has decisions the layer above cannot make, or information the layer above does not see. Otherwise it adds model calls and changes nothing. Delegation depth therefore follows lever depth: a tier gets agents only once it has levers of its own.
+
+| Tier | Who | Decides | Occupant |
+| --- | --- | --- | --- |
+| 1. Constitution | Executive, legislature, judiciary | Taxes, deficit, the envelope for each ministry, vetoes | AI (built) |
+| 2. Ministries | One minister per portfolio | Inside its envelope: management against front-line spending, the split between regions, reforms. Sends budget bids up to the executive | AI, once it has levers |
+| 3. Regional directorates | Civil service | Carrying out ministry decisions, well or badly according to their management quality | Rules |
+| 4. Institutions | Hospitals, schools | — | Not simulated |
+
+- **Judgement is AI, execution is rules.** The quality of mid-tier administration (a hospital limited by its management rather than its medicine) is a property of tier 3, its management quality, not a reason for more agents.
+- **Ministries sit inside the executive.** They are departments, not a fourth power. The executive holds the Finance desk: drafting the budget is the Ministry of Finance's work.
+- **Portfolios start fixed:** one per budget line, Finance as the executive's desk, and Economy once EU funds exist. A country pack maps its real ministries onto the portfolios for display; the game shows offices, never real ministers' names.
+- **The budget process mirrors reality:** the executive sets envelopes top-down, ministers bid bottom-up, and the two meet.
+- **A human can take one seat,** such as a single ministry under an AI executive, long before running a whole country.
+
+**Cost.** Three branches take about four model calls a year. Seven ministers would add ten to fifteen. AI regional directors would add over seventy, one more reason tier 3 is rules.
+
+**The organisation experiment.** Later, a constitutional convention of models designs the government before a run: the portfolios, which budget lines each owns, and each minister's mandate. AI-designed governments are then compared with one shaped like the real country's. This needs the simulation to make structure matter, otherwise every organisation gives the same result:
+
+- **Attention:** a minister holding many portfolios manages each one worse.
+- **Coordination:** more ministries means more overhead between them.
+- **Information:** each minister sees its own sector in detail; the executive sees summaries.
+
+**Order.** Levers first (management quality, regions, EU funds), then AI ministers with fixed portfolios, then the organisation experiment.
 
 ## Floors, goal and horizon
 
@@ -324,6 +354,7 @@ These are left out of version one on purpose.
 - **Live shadow mode.** A small country run alongside reality on a live data feed.
 - **Hybrid agents.** Rule-based households and firms, with language-model agents only for governments, neighbours and donors.
 - **Human player** in the government seat.
+- **AI ministers and the organisation experiment.** See Delegation.
 
 ## Open questions
 
