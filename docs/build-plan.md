@@ -183,3 +183,22 @@ Haiku in all three seats, world seed 1, three years. In 2026 the judiciary block
 **Three branches (Haiku), world 1, 40 years:** 158 calls, 33 of 40 budgets settled in the first round, 6 amendments, 2 judiciary blocks (both on the EU debt rule, with correct four-year-window reasoning), no year without a decision. Highest incomes of any government on world 1 (median €64,051, poorest fifth €50,961, against the single AI's €60,752 and €43,281): the legislature's fair-spread mandate kept transfers at 41–46%. It breached the committed-spending floor for state capacity, which the judiciary could not check.
 
 **Response:** the report now carries a committed-spending gauge for the four checked indices (now, and after this year's budget), and every revision shows it. A test confirms the final-year gauge predicts the floor exactly. Most retries were unit slips (42 for 42%); the reply format should say "0.42 means 42%".
+
+## Seventh look: the sector template (step 1 of sectors and levers, Nov 22, 2026, unvalidated)
+
+Six sectors now split their money into a management share (a new yearly lever, starting at 5%) and front-line money. Management builds a slow index; efficiency (index ^ 0.15, capped at 1.5) multiplies front-line money; front-line money can grow about 10% a year times efficiency over what was absorbed last year, and the excess builds a fifth as much. Social transfers are cash and exempt.
+
+Returns table, extra 1% of output a year on one line, median household income (central set):
+
+| Line | Year 10, before | Year 10, now | Year 40, before | Year 40, now |
+| --- | --- | --- | --- | --- |
+| Agriculture | +0.23% | **-0.01%** | +0.65% | +0.71% |
+| Education | -0.21% | -0.21% | +2.52% | +2.78% |
+| Health | +0.21% | +0.20% | +0.99% | +1.20% |
+| Infrastructure | +0.07% | +0.04% | +1.09% | +1.29% |
+| Administration | -0.04% | -0.03% | +1.08% | +1.27% |
+| Social transfers | +1.44% | +1.44% | +0.80% | +0.78% |
+
+The stock-size artefact is gone: tripling a tiny line now takes years to absorb, so agriculture no longer pays early. Long-run returns rise slightly because stocks are calibrated on front-line money.
+
+Technocrat against status quo, 50 worlds: central trade-off in 46 (final median +1.8%, was +1.2%), high returns trade-off in 48 (+5.5%, was +4.1%), low returns still loses 47. Its one-point-a-year shifts stay within the absorption limit.
