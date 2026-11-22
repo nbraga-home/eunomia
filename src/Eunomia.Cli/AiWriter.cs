@@ -41,6 +41,20 @@ public static class AiWriter
             sb.Append($"*World:* {(year.Events.Count == 0 ? "calm" : string.Join(", ", year.Events))}. ");
             sb.Append($"*Coming in:* growth {P(before.OutputGrowth)}, debt {P(before.DebtRatio)}, rating {before.Rating}.\n\n");
 
+            bool branches = d.Steps.Any(s => s.Branch != "government");
+            if (branches)
+            {
+                // The meeting as it happened: each branch's move and its reasons.
+                foreach (var step in d.Steps)
+                {
+                    string who = char.ToUpperInvariant(step.Branch[0]) + step.Branch[1..];
+                    sb.Append($"- *Round {step.Round}.* **{who} {step.Action}.** {step.Text}");
+                    if (!string.IsNullOrWhiteSpace(step.Detail) && step.Branch != "executive") sb.Append($" *({step.Detail})*");
+                    sb.Append('\n');
+                }
+                sb.Append('\n');
+            }
+
             if (d.Abstained)
             {
                 sb.Append($"**No decision.** Last year's budget carries over. {string.Join(" ", d.Errors)}\n\n");
@@ -49,7 +63,7 @@ public static class AiWriter
             {
                 string changes = Changes(before.Policy, year.Policy);
                 sb.Append($"**Decision:** {changes}\n\n");
-                if (d.Rationale.Length > 0) sb.Append($"> {d.Rationale}\n\n");
+                if (!branches && d.Rationale.Length > 0) sb.Append($"> {d.Rationale}\n\n");
                 if (d.Expectations.Length > 0) sb.Append($"*Expects:* {d.Expectations}\n\n");
             }
 

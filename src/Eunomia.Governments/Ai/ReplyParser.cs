@@ -8,7 +8,15 @@ public sealed record ParsedReply(Policy? Policy, string Rationale, string Expect
     public bool Ok => Errors.Count == 0 && Policy is not null;
 }
 
-/// <summary>Extracts the decision record from a model's reply. Errors come back as text the model can read.</summary>
+/// <summary>A vote: one of a fixed set of decisions, with its reasons and the whole object for extra fields.</summary>
+public sealed record ParsedChoice(string Decision, string Rationale, JsonElement Root, IReadOnlyList<string> Errors)
+{
+    public bool Ok => Errors.Count == 0;
+    public string Str(string name) => Root.ValueKind == JsonValueKind.Object && Root.TryGetProperty(name, out var v) && v.ValueKind == JsonValueKind.String ? v.GetString() ?? "" : "";
+    public int? Int(string name) => Root.ValueKind == JsonValueKind.Object && Root.TryGetProperty(name, out var v) && v.ValueKind == JsonValueKind.Number && v.TryGetInt32(out int i) ? i : null;
+}
+
+/// <summary>Extracts decision records from a model's reply. Errors come back as text the model can read.</summary>
 public static class ReplyParser
 {
     /// <summary>Shares summing to within this distance of 1 are rescaled; models round.</summary>
@@ -20,57 +28,75 @@ public static class ReplyParser
         CommentHandling = JsonCommentHandling.Skip,
     };
 
+    private static readonly string[] ShareNames = ["health", "education", "infrastructure", "agriculture", "socialTransfers", "security", "administration"];
+
+    /// <summary>A full budget reply: taxes, planned deficit, shares, rationale, expectations.</summary>
     public static ParsedReply Parse(string text)
     {
-        int start = text.IndexOf('{');
-        int end = text.LastIndexOf('}');
-        if (start < 0 || end <= start) return Fail("The reply contained no JSON object.");
-
-        JsonDocument doc;
-        try { doc = JsonDocument.Parse(text[start..(end + 1)], Options); }
-        catch (JsonException e) { return Fail($"The JSON could not be read: {e.Message}"); }
-
-        using (doc)
-        {
-            var root = doc.RootElement;
-            var errors = new List<string>();
-
-            double Num(JsonElement parent, string name, string where)
-            {
-                if (parent.ValueKind == JsonValueKind.Object && parent.TryGetProperty(name, out var v) && v.ValueKind == JsonValueKind.Number)
-                    return v.GetDouble();
-                errors.Add($"Missing or non-numeric \"{name}\" in {where}.");
-                return double.NaN;
-            }
-            JsonElement Obj(string name)
-            {
-                if (root.TryGetProperty(name, out var v) && v.ValueKind == JsonValueKind.Object) return v;
-                errors.Add($"Missing object \"{name}\".");
-                return default;
-            }
-            string Str(string name) => root.TryGetProperty(name, out var v) && v.ValueKind == JsonValueKind.String ? v.GetString() ?? "" : "";
-
-            var taxesEl = Obj("taxes");
-            var taxes = new Taxes(Num(taxesEl, "income", "taxes"), Num(taxesEl, "corporate", "taxes"), Num(taxesEl, "consumption", "taxes"));
-            double deficit = Num(root, "plannedDeficit", "the reply");
-
-            var sharesEl = Obj("budgetShares");
-            string[] names = ["health", "education", "infrastructure", "agriculture", "socialTransfers", "security", "administration"];
-            var shares = names.Select(n => Num(sharesEl, n, "budgetShares")).ToArray();
-
-            if (errors.Count == 0)
-            {
-                double sum = shares.Sum();
-                if (shares.Any(s => s < 0)) errors.Add("Budget shares cannot be negative.");
-                else if (Math.Abs(sum - 1) > ShareSumSlack) errors.Add($"Budget shares sum to {sum:0.0000}; they must sum to 1.");
-                else shares = shares.Select(s => s / sum).ToArray();
-            }
-
-            string rationale = Str("rationale"), expectations = Str("expectations");
-            if (errors.Count > 0) return new ParsedReply(null, rationale, expectations, errors);
-            return new ParsedReply(new Policy(taxes, deficit, BudgetShares.FromArray(shares)), rationale, expectations, []);
-        }
+        var root = Extract(text, out string? error);
+        if (root is null) return new ParsedReply(null, "", "", [error!]);
+        var errors = new List<string>();
+        var policy = ParsePolicy(root.Value, errors);
+        return new ParsedReply(errors.Count == 0 ? policy : null, Str(root.Value, "rationale"), Str(root.Value, "expectations"), errors);
     }
 
-    private static ParsedReply Fail(string error) => new(null, "", "", [error]);
+    /// <summary>A vote whose "decision" must be one of <paramref name="allowed"/>.</summary>
+    public static ParsedChoice ParseChoice(string text, params string[] allowed)
+    {
+        var root = Extract(text, out string? error);
+        if (root is null) return new ParsedChoice("", "", default, [error!]);
+        string decision = Str(root.Value, "decision").Trim().ToLowerInvariant();
+        var errors = new List<string>();
+        if (!allowed.Contains(decision))
+            errors.Add($"\"decision\" must be one of: {string.Join(", ", allowed.Select(a => $"\"{a}\""))}.");
+        return new ParsedChoice(decision, Str(root.Value, "rationale"), root.Value, errors);
+    }
+
+    /// <summary>Reads taxes, plannedDeficit and budgetShares from an object. Shares slightly off 1 are rescaled.</summary>
+    public static Policy? ParsePolicy(JsonElement root, List<string> errors)
+    {
+        int before = errors.Count;
+        double Num(JsonElement parent, string name, string where)
+        {
+            if (parent.ValueKind == JsonValueKind.Object && parent.TryGetProperty(name, out var v) && v.ValueKind == JsonValueKind.Number)
+                return v.GetDouble();
+            errors.Add($"Missing or non-numeric \"{name}\" in {where}.");
+            return double.NaN;
+        }
+        JsonElement Obj(string name)
+        {
+            if (root.ValueKind == JsonValueKind.Object && root.TryGetProperty(name, out var v) && v.ValueKind == JsonValueKind.Object) return v;
+            errors.Add($"Missing object \"{name}\".");
+            return default;
+        }
+
+        var taxesEl = Obj("taxes");
+        var taxes = new Taxes(Num(taxesEl, "income", "taxes"), Num(taxesEl, "corporate", "taxes"), Num(taxesEl, "consumption", "taxes"));
+        double deficit = Num(root, "plannedDeficit", "the budget");
+        var sharesEl = Obj("budgetShares");
+        var shares = ShareNames.Select(n => Num(sharesEl, n, "budgetShares")).ToArray();
+        if (errors.Count > before) return null;
+
+        double sum = shares.Sum();
+        if (shares.Any(s => s < 0)) { errors.Add("Budget shares cannot be negative."); return null; }
+        if (Math.Abs(sum - 1) > ShareSumSlack) { errors.Add($"Budget shares sum to {sum:0.0000}; they must sum to 1."); return null; }
+        return new Policy(taxes, deficit, BudgetShares.FromArray(shares.Select(s => s / sum).ToArray()));
+    }
+
+    private static JsonElement? Extract(string text, out string? error)
+    {
+        error = null;
+        int start = text.IndexOf('{');
+        int end = text.LastIndexOf('}');
+        if (start < 0 || end <= start) { error = "The reply contained no JSON object."; return null; }
+        try
+        {
+            using var doc = JsonDocument.Parse(text[start..(end + 1)], Options);
+            return doc.RootElement.Clone();
+        }
+        catch (JsonException e) { error = $"The JSON could not be read: {e.Message}"; return null; }
+    }
+
+    private static string Str(JsonElement root, string name) =>
+        root.ValueKind == JsonValueKind.Object && root.TryGetProperty(name, out var v) && v.ValueKind == JsonValueKind.String ? v.GetString() ?? "" : "";
 }

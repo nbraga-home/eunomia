@@ -13,7 +13,7 @@ public static class StateReport
 {
     private static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
 
-    public static string Build(MeetingContext ctx, IReadOnlyList<string> memory)
+    public static string Body(MeetingContext ctx, IReadOnlyList<string> memory, string memoryTitle)
     {
         var sb = new StringBuilder();
         int calendar = ctx.BaseYear + 1 + ctx.Year;
@@ -91,23 +91,45 @@ public static class StateReport
 
         if (memory.Count > 0)
         {
-            sb.AppendLine("## Your recent decisions, in your own words");
+            sb.AppendLine($"## {memoryTitle}");
             foreach (string m in memory) sb.AppendLine($"- {m}");
             sb.AppendLine();
         }
+        return sb.ToString();
+    }
 
-        sb.AppendLine("## Your reply");
-        sb.AppendLine("Reply with one JSON object and nothing else, in this form (the numbers are only an example):");
-        sb.AppendLine("""
-            {
-              "taxes": { "income": 0.42, "corporate": 0.20, "consumption": 0.24 },
-              "plannedDeficit": 0.0,
-              "budgetShares": { "health": 0.165, "education": 0.10, "infrastructure": 0.14, "agriculture": 0.012,
-                                "socialTransfers": 0.42, "security": 0.057, "administration": 0.106 },
-              "rationale": "Why this budget, in a few sentences, based on the report.",
-              "expectations": "What you expect to happen, and by when."
-            }
-            """);
+    /// <summary>The report plus the single government's reply instructions.</summary>
+    public static string Build(MeetingContext ctx, IReadOnlyList<string> memory) =>
+        Body(ctx, memory, "Your recent decisions, in your own words") +
+        "## Your reply\nReply with one JSON object and nothing else, in this form (the numbers are only an example):\n" +
+        PolicyJsonExample("Why this budget, in a few sentences, based on the report.") + "\n";
+
+    /// <summary>A budget in the reply format, with example numbers.</summary>
+    public static string PolicyJsonExample(string rationaleHint) => $$"""
+        {
+          "taxes": { "income": 0.42, "corporate": 0.20, "consumption": 0.24 },
+          "plannedDeficit": 0.0,
+          "budgetShares": { "health": 0.165, "education": 0.10, "infrastructure": 0.14, "agriculture": 0.012,
+                            "socialTransfers": 0.42, "security": 0.057, "administration": 0.106 },
+          "rationale": "{{rationaleHint}}",
+          "expectations": "What you expect to happen, and by when."
+        }
+        """;
+
+    /// <summary>A proposal as the branches see it: the numbers, and what moves against the policy in force.</summary>
+    public static string DescribeRevision(string id, Policy p, CheckResult check, Policy inForce)
+    {
+        var sb = new StringBuilder();
+        sb.AppendLine($"### Revision {id}{(check.Scaled ? " (share changes scaled down to fit the reallocation limit)" : "")}");
+        var t = p.Taxes;
+        sb.AppendLine($"- Taxes: income {P(t.Income)}, corporate {P(t.Corporate)}, consumption {P(t.Consumption)}. Planned deficit {P(p.PlannedDeficit)}.");
+        sb.AppendLine($"- Budget for the seven lines: {Bn(check.Envelope)}.");
+        foreach (var line in BudgetLines.All)
+        {
+            double delta = p.BudgetShares[line] - inForce.BudgetShares[line];
+            string change = Math.Abs(delta) < 0.00005 ? "" : $" ({(delta > 0 ? "+" : "−")}{Math.Abs(delta * 100).ToString("0.00", Inv)} pts)";
+            sb.AppendLine($"  - {Label(line)}: share {p.BudgetShares[line].ToString("0.0000", Inv)}{change}, {Bn(check.Appropriations[(int)line])}");
+        }
         return sb.ToString();
     }
 

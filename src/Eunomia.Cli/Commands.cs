@@ -35,7 +35,7 @@ public static class Commands
         var run = new Simulation(config, set, feed).Run(government);
         RunWriter.Write(outDir, run, feed, seed);
         if (government is Eunomia.Governments.Ai.ITranscribed ai)
-            AiWriter.Write(outDir, run, ai, config.Pack.BaseYear, $"{government.Name} ({settings.Model}) / {set} / {label}");
+            AiWriter.Write(outDir, run, ai, config.Pack.BaseYear, $"{government.Name} ({(settings.BranchModels is null ? settings.Model : string.Join(", ", settings.BranchModels))}) / {set} / {label}");
 
         var s = run.Summary;
         string breaches = s.Breaches.Count == 0 ? "" : ": " + string.Join("; ", s.Breaches.Take(5).Select(b => $"{b.Floor} y{b.Year} ({b.Detail})"));
@@ -88,6 +88,43 @@ public static class Commands
         Directory.CreateDirectory(Path.GetDirectoryName(outPath)!);
         File.WriteAllText(outPath, csv.ToString());
         Console.WriteLine($"\nUnvalidated: results hold inside this model only. Details: {outPath}");
+        return 0;
+    }
+
+    /// <summary>
+    /// Scores recorded AI runs against a scripted government in the same worlds. Each recorded run is replayed
+    /// (no model calls), so the comparison uses the current rules. Missing folders are reported, never dropped.
+    /// </summary>
+    public static int Compare(Args a)
+    {
+        var (config, settings) = LoadConfig(a);
+        string pattern = a.Get("runs", "runs/singleai-haiku-s{seed}");
+        string nameB = a.Get("b", "technocrat");
+        string set = a.Get("set", "central");
+        var seeds = a.GetSeeds("seeds", "1-10");
+
+        Console.WriteLine($"{pattern} (A, replayed) against {nameB} (B), set {set}\n");
+        Console.WriteLine($"{"seed",4}  {"A status",-9} {"B status",-9} {"outcome",-13} {"final A",9} {"final B",9} {"worst A",9} {"worst B",9}  {"poorest A",9} {"poorest B",9}");
+        var outcomes = new List<Outcome>();
+        int missing = 0;
+        foreach (ulong seed in seeds)
+        {
+            string dir = Path.Combine(RepoRoot(), pattern.Replace("{seed}", seed.ToString()));
+            if (!File.Exists(Path.Combine(dir, "decisions.json")) || !File.Exists(Path.Combine(dir, "summary.json")))
+            {
+                Console.WriteLine($"{seed,4}  incomplete: no finished run in {dir}");
+                missing++;
+                continue;
+            }
+            var feed = Feed(config, seed);
+            var ra = new Simulation(config, set, feed).Run(new ReplayDecisions(dir)).Summary;
+            var rb = new Simulation(config, set, feed).Run(Occupants.Create(nameB, settings)).Summary;
+            var o = Judge.Compare(ra, rb, config.Government.ScoreTolerance);
+            outcomes.Add(o);
+            Console.WriteLine($"{seed,4}  {ra.Status,-9} {rb.Status,-9} {o,-13} {ra.FinalMedian,9:N0} {rb.FinalMedian,9:N0} {ra.WorstMedian,9:N0} {rb.WorstMedian,9:N0}  {ra.FinalLowestFifth,9:N0} {rb.FinalLowestFifth,9:N0}");
+        }
+        Console.WriteLine($"\nA wins {outcomes.Count(o => o == Outcome.AWins)}, B wins {outcomes.Count(o => o == Outcome.BWins)}, " +
+            $"trade-off {outcomes.Count(o => o == Outcome.TradeOff)}, both breached {outcomes.Count(o => o == Outcome.BothBreached)}, incomplete {missing}. Unvalidated.");
         return 0;
     }
 
@@ -162,7 +199,8 @@ public static class Commands
         if (a.Has("horizon"))
             config = config with { Government = config.Government with { HorizonYears = int.Parse(a.Get("horizon", "40")) } };
         var baseline = ConfigLoader.LoadFile<BaselineConfig>(Path.Combine(configDir, "baseline.json"));
-        var settings = new OccupantSettings(baseline, configDir, a.Get("model", "claude-haiku"), Log: Console.Error.WriteLine);
+        var branchModels = a.Has("models") ? a.GetList("models", "") : null;
+        var settings = new OccupantSettings(baseline, configDir, a.Get("model", "claude-haiku"), Log: Console.Error.WriteLine, BranchModels: branchModels);
         return (config, settings);
     }
 

@@ -7,10 +7,12 @@ CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
 const string Help = """
     eunomia <command> [options]
 
-      run      --occupant frozen|statusquo|technocrat|singleai  --seed 1 | --flat  --set central  --model claude-haiku  --out runs/name
+      run      --occupant frozen|statusquo|technocrat|singleai|threebranch  --seed 1 | --flat  --set central  --model claude-haiku  --out runs/name
+               threebranch takes --models exec,legislature,judiciary  (default: all --model)
       run      --occupant replay --from runs/<folder> --seed 1   (re-enact recorded decisions, no model calls)
       pair     --a technocrat --b statusquo --seeds 1-20 --sets central,lowReturns,highReturns
       returns  --sets central,lowReturns,highReturns
+      compare  --runs runs/singleai-haiku-s{seed} --seeds 1-10 --b technocrat --set central   (replays recorded runs, no model calls)
 
     Common: --config <dir> --pack <dir> --horizon <years>   (default: the repository's config and packs/portugal)
     """;
@@ -29,6 +31,7 @@ try
         "run" => Commands.Run(options),
         "pair" => Commands.Pair(options),
         "returns" => Commands.Returns(options),
+        "compare" => Commands.Compare(options),
         _ => throw new ArgumentException($"Unknown command '{args[0]}'."),
     };
 }

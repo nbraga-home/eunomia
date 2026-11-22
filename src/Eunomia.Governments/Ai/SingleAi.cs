@@ -6,6 +6,7 @@ public sealed record TranscriptEntry
 {
     public required int Year { get; init; }
     public required int Attempt { get; init; }
+    public string Branch { get; init; } = "government";
     public required string Model { get; init; }
     public required string Prompt { get; init; }
     public required string Reply { get; init; }
@@ -22,7 +23,12 @@ public sealed record Deliberation
     public required string Expectations { get; init; }
     public required IReadOnlyList<string> Errors { get; init; }
     public required bool Abstained { get; init; }
+    /// <summary>Who did what, in order. A single government has one step; three branches have many.</summary>
+    public IReadOnlyList<Step> Steps { get; init; } = [];
 }
+
+/// <summary>One move in a meeting: a proposal, a vote, a block.</summary>
+public sealed record Step(int Round, string Branch, string Action, string Text, string? Detail = null);
 
 /// <summary>An occupant that keeps a transcript of its model calls.</summary>
 public interface ITranscribed
@@ -84,6 +90,7 @@ public sealed class SingleAi(IBranchModel model, string mandate, int memorySize 
             {
                 Year = ctx.Year, Proposed = parsed.Policy, Rationale = parsed.Rationale,
                 Expectations = parsed.Expectations, Errors = [], Abstained = false,
+                Steps = [new Step(1, "government", "proposes", parsed.Rationale, parsed.Expectations)],
             });
             return parsed.Policy;
         }
