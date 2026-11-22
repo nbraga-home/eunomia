@@ -1,6 +1,6 @@
 // Rules of the game. Fixed during a run; only the player changes them, before it starts.
 {
-  "horizonYears": 20,
+  "horizonYears": 40,
   "taxBounds": {
     "income":      { "min": 0.05, "max": 0.60 },
     "corporate":   { "min": 0.05, "max": 0.45 },

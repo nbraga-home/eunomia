@@ -122,7 +122,7 @@ public class FiscalRulesTests
     public void TheEscapeClauseSuspendsTheRulesInACrisis()
     {
         var c = Repo.LoadPortugal();
-        var crisis = WorldGenerator.Flat(c.World, 20).Select(r => r with { CrisisActive = true }).ToList();
+        var crisis = WorldGenerator.Flat(c.World, c.Government.HorizonYears).Select(r => r with { CrisisActive = true }).ToList();
         var run = new Simulation(c, "central", crisis).Run(new Scripted("deficit", ctx => ctx.StartingPolicy with { PlannedDeficit = 0.05 }));
         Assert.DoesNotContain(run.Summary.Breaches, b => b.Floor == "fiscalRules");
     }

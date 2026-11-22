@@ -10,7 +10,7 @@ public class ConfigTests
     {
         var c = Repo.LoadPortugal();
         Assert.Equal("Portugal", c.Pack.Name);
-        Assert.Equal(20, c.Government.HorizonYears);
+        Assert.Equal(40, c.Government.HorizonYears);
         Assert.Equal(6, c.World.Events.Count);
         Assert.Contains("central", c.ParameterSets.Keys);
     }

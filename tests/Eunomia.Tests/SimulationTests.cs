@@ -12,7 +12,7 @@ public class SimulationTests
     public void OpeningYearReproducesThePackOutput()
     {
         var c = Repo.LoadPortugal();
-        var sim = new Simulation(c, "central", WorldGenerator.Flat(c.World, 20));
+        var sim = new Simulation(c, "central", WorldGenerator.Flat(c.World, c.Government.HorizonYears));
         Assert.Equal(c.Pack.Output, sim.Opening.Output, c.Pack.Output * Tight);
         Assert.Equal(c.Pack.Debt / c.Pack.Output, sim.Opening.DebtRatio, 12);
     }
@@ -36,7 +36,7 @@ public class SimulationTests
     public void SameSeedGivesIdenticalRuns()
     {
         var c = Repo.LoadPortugal();
-        RunResult Once() => new Simulation(c, "central", WorldGenerator.Generate(c.World, 9, 20)).Run(Fixtures.Frozen);
+        RunResult Once() => new Simulation(c, "central", WorldGenerator.Generate(c.World, 9, c.Government.HorizonYears)).Run(Fixtures.Frozen);
         var a = Once();
         var b = Once();
         Assert.Equal(a.Years.Select(y => y.MedianIncome), b.Years.Select(y => y.MedianIncome));
@@ -118,7 +118,7 @@ public class SimulationTests
     public void TaxCanOnlyMoveSoFarInAYear()
     {
         var c = Repo.LoadPortugal();
-        var sim = new Simulation(c, "central", WorldGenerator.Flat(c.World, 20));
+        var sim = new Simulation(c, "central", WorldGenerator.Flat(c.World, c.Government.HorizonYears));
         var p = c.Pack.Policy;
         var result = sim.Check(p with { Taxes = p.Taxes with { Income = p.Taxes.Income + 0.05 } });
         Assert.False(result.Ok);
@@ -128,7 +128,7 @@ public class SimulationTests
     public void LargeReallocationIsScaledToTheAllowance()
     {
         var c = Repo.LoadPortugal();
-        var sim = new Simulation(c, "central", WorldGenerator.Flat(c.World, 20));
+        var sim = new Simulation(c, "central", WorldGenerator.Flat(c.World, c.Government.HorizonYears));
         var p = c.Pack.Policy;
         var s = p.BudgetShares.ToArray();
         s[(int)BudgetLine.SocialTransfers] -= 0.20;

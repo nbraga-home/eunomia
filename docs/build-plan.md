@@ -8,12 +8,12 @@ The full spec (`reference-spec-v2.md`) is a quarry, not a blueprint. Reviewing p
 
 ## What the toy is
 
-Portugal as one national economy, governed for 20 years in yearly steps, by a government that sets taxes, the deficit and the budget split. Every run is compared with another run in the same world.
+Portugal as one national economy, governed for 40 years in yearly steps (a generation: born, educated, working), by a government that sets taxes, the deficit and the budget split. Every run is compared with another run in the same world.
 
 | In the toy | Left out until a run asks for it |
 | --- | --- |
 | One national economy, five income groups | Regions, sectors (except a farming share) |
-| Yearly steps, 20 years | Monthly ticks, quarterly and emergency meetings |
+| Yearly steps, 40 years | Monthly ticks, quarterly and emergency meetings |
 | Three taxes, planned deficit, seven budget shares | Allowances, tax-change limits beyond simple bounds |
 | A seeded world: demand, energy, food, interest rate, stress, a few events | Partner countries, the world map |
 | Occupants: frozen, status quo, technocrat, then one AI, then three branches | Replay, human player |
@@ -34,7 +34,7 @@ Everything is in constant 2024 euros. Every stock is an index that starts at 1.
 8. **Debt.** Interest is charged at a market rate (world rate + spread that rises with debt + financial stress). Inflation shrinks real debt each year. *This fixes the units bug found in spec v2.*
 9. **People.** Working-age population and household count follow fixed yearly rates from the pack.
 
-**Score.** Real disposable income of the median household (the middle fifth), in year 20 and in the worst year. Floors first, then income, as in the design notes.
+**Score.** Real disposable income of the median household (the middle fifth), in the final year and in the worst year. Floors first, then income, as in the design notes.
 
 ## Occupants
 
@@ -100,8 +100,35 @@ Pairs over 50 worlds per set: the technocrat still loses to the status quo in 47
 
 What changed: the EU rules now cap borrowed redistribution at roughly 1 to 2% of output a year, which is about the room Portugal really has. What did not change: inside that room, transfers still beat every investment for the median household within 20 years. The question of what the score rewards (debt and stocks handed on, or output alongside the median) is still open.
 
+## Third look: a 40-year horizon (Nov 22, 2026, unvalidated)
+
+The horizon is now 40 years: the time from birth through school into a full working life. `--horizon` overrides it.
+
+Extra 1% of output a year, borrowed, against frozen (central set), median household income:
+
+| Line | Year 20 | Year 30 | Year 40 |
+| --- | --- | --- | --- |
+| Education | +0.41% | +1.45% | **+2.52%** |
+| Infrastructure | +0.50% | +0.83% | +1.09% |
+| Administration | 0.00% | +0.69% | +1.08% |
+| Health | +0.59% | +0.84% | +0.99% |
+| Social transfers | **+1.23%** | +1.02% | +0.80% |
+
+Transfers fade as interest on the borrowed money accumulates; education keeps compounding. Education overtakes transfers around year 25.
+
+Technocrat against status quo, 50 worlds per set:
+
+| Horizon | Central | Low returns | High returns |
+| --- | --- | --- | --- |
+| 20 years | loses 48 | loses 47 | loses 49 |
+| 30 years | loses 47 | loses 47 | trade-off 45 |
+| 40 years | trade-off 43 (final median +1.2%) | loses 47 | trade-off 48 (final median +4.1%) |
+
+At 40 years the technocrat ends richer under central and high returns, but its worst year is worse (it cut transfers early), so the win rule calls it a trade-off: pain now, gain later. Under low returns it still loses. The answer now depends on the return assumption, which is what the named sets are for.
+
 ## Known questions to answer by running, not by writing
 
 - Is a line's return driven by its size today rather than by evidence? (Spec v2 finding: stocks assume today's spending has held forever.)
-- Can education ever pay back inside 20 years?
-- What do EU funds, fiscal rules and rising pension costs change?
+- ~~Can education ever pay back inside 20 years?~~ No; inside 40, yes (third look).
+- What do EU funds and rising pension costs change?
+- The population path is fixed. Over 40 years, Portugal's real working-age decline is likely steeper than 0.4% a year.

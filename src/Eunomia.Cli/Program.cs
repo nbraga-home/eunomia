@@ -11,7 +11,7 @@ const string Help = """
       pair     --a technocrat --b statusquo --seeds 1-20 --sets central,lowReturns,highReturns
       returns  --sets central,lowReturns,highReturns
 
-    Common: --config <dir> --pack <dir>   (default: the repository's config and packs/portugal)
+    Common: --config <dir> --pack <dir> --horizon <years>   (default: the repository's config and packs/portugal)
     """;
 
 if (args.Length == 0 || args[0] is "-h" or "--help" or "help")

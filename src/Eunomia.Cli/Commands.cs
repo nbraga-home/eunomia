@@ -88,7 +88,8 @@ public static class Commands
         var (config, _) = LoadConfig(a);
         var sets = a.GetList("sets", "central,lowReturns,highReturns");
         double extra = double.Parse(a.Get("extra", "0.01"), Inv);
-        int[] checkpoints = [5, 10, 20];
+        int horizon = config.Government.HorizonYears;
+        int[] checkpoints = new[] { 5, 10, 20, 30, 40 }.Where(y => y < horizon).Append(horizon).Distinct().ToArray();
         var feed = Feed(config, null);
 
         var csv = new StringBuilder("set,line,year,outputDiff,medianDiff,lowestFifthDiff,debtRatioDiff\n");
@@ -99,7 +100,7 @@ public static class Commands
         {
             var frozen = new Simulation(config, set, feed).Run(new Frozen());
             Console.WriteLine($"[{set}]");
-            Console.WriteLine($"  {"line",-16}" + string.Concat(checkpoints.Select(y => $"{"year " + y,18}")) + $"{"debt ratio y20",16}  {"rating y20",-11}floors breached (first year)");
+            Console.WriteLine($"  {"line",-16}" + string.Concat(checkpoints.Select(y => $"{"year " + y,18}")) + $"{"debt ratio end",16}  {"rating end",-11}floors breached (first year)");
             foreach (var line in BudgetLines.All)
             {
                 var probe = new Simulation(config, set, feed).Run(new ReturnsProbe(line, extra));
@@ -146,6 +147,8 @@ public static class Commands
     {
         string configDir = a.Get("config", Path.Combine(RepoRoot(), "config"));
         var config = ConfigLoader.Load(configDir, a.Get("pack", Path.Combine(RepoRoot(), "packs", "portugal")));
+        if (a.Has("horizon"))
+            config = config with { Government = config.Government with { HorizonYears = int.Parse(a.Get("horizon", "20")) } };
         var baseline = ConfigLoader.LoadFile<BaselineConfig>(Path.Combine(configDir, "baseline.json"));
         return (config, baseline);
     }
