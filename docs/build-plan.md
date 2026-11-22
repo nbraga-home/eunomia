@@ -202,3 +202,15 @@ Returns table, extra 1% of output a year on one line, median household income (c
 The stock-size artefact is gone: tripling a tiny line now takes years to absorb, so agriculture no longer pays early. Long-run returns rise slightly because stocks are calibrated on front-line money.
 
 Technocrat against status quo, 50 worlds: central trade-off in 46 (final median +1.8%, was +1.2%), high returns trade-off in 48 (+5.5%, was +4.1%), low returns still loses 47. Its one-point-a-year shifts stay within the absorption limit.
+
+## Eighth look: education by fifth and generation (step 2 of sectors and levers, Nov 22, 2026, unvalidated)
+
+Education money builds a school stock; quality is school stock per pupil to the power 0.5; coverage at three levels per fifth responds to quality and to the parents' schooling; school leavers join the workforce after nine years and a fortieth of the workforce retires each year; wages by fifth follow each fifth's skills.
+
+**Frozen policy, calm world, 40 years:** workforce skills +24% with no policy change (poorest fifth +48%, richest +9%), because Portugal's young are far better schooled than its older workers. Quality per school year +33% (spending grows with the economy while cohorts shrink). Growth rises from 1.0% to 1.7% a year; median household income +57%; poorest fifth +78%, richest +29%.
+
+**Returns table, extra 1% of output a year, median at year 40 (central):** education fell from +2.78% to **+0.57%**; health +1.31%, infrastructure +1.42%, agriculture +0.87%, administration +0.69%, transfers +0.87%. Education money now works only through quality, at half elasticity, and only through new generations.
+
+**Technocrat against status quo, 50 worlds:** central 14 losses and 36 trade-offs (final median +0.2%, was +1.8%); low returns 49 losses; high returns 50 trade-offs (+2.6%).
+
+**Two things to watch.** The spending-to-learning elasticity (0.5) now largely decides what education money is worth, and it is not yet in the named sets. And with wages following skills one for one, frozen policy compresses inequality strongly over 40 years. Both are assumptions to test, not findings.
