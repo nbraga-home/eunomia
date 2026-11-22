@@ -270,3 +270,20 @@ The regime search now ranks clean regimes by wins under the rule, then by final 
 | Time | 12 minutes | 7 minutes | | |
 
 Without the example values, Haiku leaves the optional fields out entirely; it still never changes them. Sonnet uses the management lever with reasons ("so the management index keeps building"). Neither model ever changes the education regime: both call it a use of scarce capacity for change, though a change costs 1 point of a yearly allowance near 5. So the status-quo regime is not an artefact of the example: two models keep it with the example gone. Sonnet cut income tax from 42% to 29% over the last four years; the richest fifth rose from about 83,000 to 111,000 while the poorest fell from about 53,000 to 51,400, and the guard turned what would have been a win into a trade-off. This is the end-game gaming the guard was meant to catch.
+
+## Eleventh look: Sonnet over ten worlds with the new levers (Nov 22, 2026, unvalidated)
+
+Single AI, Sonnet, worlds 1 to 10, central set; 400 calls, 22 minutes three at a time plus world 1 from the second smoke; no retries (`runs/singleai-sonnet-s1` to `s10`).
+
+| | Against technocrat | Against status quo |
+| --- | --- | --- |
+| Floors | clean in 10 of 10 (the first AI batch with no breach) | |
+| Final median | higher in 10 of 10, by +1.6% to +8.7% | higher in 10 of 10 |
+| Worst year | at least as good in 10 of 10 | lower in 6 of 10 |
+| Poorest fifth, final | lower in 10 of 10, by 2% to 26% | lower in 10 of 10 |
+| Win rule | 10 trade-offs (all 10 would have been wins without the guard) | 10 trade-offs |
+| Low returns / high returns, against technocrat | 2 losses, 8 trade-offs / 10 trade-offs | |
+
+**What Sonnet did.** Paid debt down, raised management shares (to 7% to 25% of each line, every world), and then cut income tax steadily: from 42% to between 5% and 32% by the final year, with the cuts under way by year 20 in six worlds. Transfers kept their budget share (cut to 32% to 37% in two worlds), so they shrank in euros as the budget shrank. The richest fifths gained most. It never proposed an education regime change in any world.
+
+**Why the guard and the AI disagree.** The AI reads "a gain that leaves the poorest fifth worse off does not count" as worse off than before: its reasoning checks the poorest fifth against its starting income and last year's. The score compares it with the rival government in the same world, which the AI cannot see. With growth, the poorest fifth ends 10% to 65% above where it started in every world, so by its own reading the AI never breaks the guard, while the score says it loses 2% to 26% to the technocrat.
