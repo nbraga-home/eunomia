@@ -193,6 +193,8 @@ public sealed record EducationData
 public sealed record ParameterSet
 {
     public required double ReturnsMultiplier { get; init; }
+    /// <summary>Overrides how strongly school stock per pupil turns into learning. Null keeps economy.json's value.</summary>
+    public double? EducationSpendingElasticity { get; init; }
 }
 
 // ---------- World ----------

@@ -76,3 +76,15 @@ public class MinistryMapTests
         Assert.Null(Map.LineOf("Finance"));
     }
 }
+
+public class ParameterSetTests
+{
+    [Fact]
+    public void SetsCarryTheirOwnEducationElasticity()
+    {
+        var c = Repo.LoadPortugal();
+        Assert.Equal(0.3, c.Economy("lowReturns").Education.SpendingElasticity);
+        Assert.Equal(0.5, c.Economy("central").Education.SpendingElasticity);
+        Assert.Equal(0.8, c.Economy("highReturns").Education.SpendingElasticity);
+    }
+}

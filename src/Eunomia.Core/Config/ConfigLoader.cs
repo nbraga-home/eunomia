@@ -49,6 +49,9 @@ public static class ConfigLoader
     {
         if (!config.ParameterSets.TryGetValue(parameterSet, out var set))
             throw new ArgumentException($"Unknown parameter set '{parameterSet}'. Known: {string.Join(", ", config.ParameterSets.Keys)}");
-        return config.Economy.WithReturnsMultiplier(set.ReturnsMultiplier);
+        var economy = config.Economy.WithReturnsMultiplier(set.ReturnsMultiplier);
+        if (set.EducationSpendingElasticity is double e)
+            economy = economy with { Education = economy.Education with { SpendingElasticity = e } };
+        return economy;
     }
 }
