@@ -1,0 +1,28 @@
+// Model adapters. Each entry starts a vendor CLI on the player's own subscription login.
+// The call runs in a new empty folder, with tools off and no saved session.
+{
+  "claude-haiku": {
+    "name": "claude-haiku",
+    "command": "claude",
+    "args": ["-p", "--model", "haiku", "--output-format", "text", "--tools", "", "--no-session-persistence",
+             "--strict-mcp-config", "--setting-sources", "project"],
+    "systemPromptFileArg": "--system-prompt-file",
+    "timeoutSeconds": 300
+  },
+  "claude-sonnet": {
+    "name": "claude-sonnet",
+    "command": "claude",
+    "args": ["-p", "--model", "sonnet", "--output-format", "text", "--tools", "", "--no-session-persistence",
+             "--strict-mcp-config", "--setting-sources", "project"],
+    "systemPromptFileArg": "--system-prompt-file",
+    "timeoutSeconds": 300
+  },
+  "claude-opus": {
+    "name": "claude-opus",
+    "command": "claude",
+    "args": ["-p", "--model", "opus", "--output-format", "text", "--tools", "", "--no-session-persistence",
+             "--strict-mcp-config", "--setting-sources", "project"],
+    "systemPromptFileArg": "--system-prompt-file",
+    "timeoutSeconds": 300
+  }
+}

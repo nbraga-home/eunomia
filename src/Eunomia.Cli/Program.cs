@@ -7,7 +7,7 @@ CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
 const string Help = """
     eunomia <command> [options]
 
-      run      --occupant frozen --seed 1 | --flat  --set central  --out runs/name
+      run      --occupant frozen|statusquo|technocrat|singleai  --seed 1 | --flat  --set central  --model claude-haiku  --out runs/name
       pair     --a technocrat --b statusquo --seeds 1-20 --sets central,lowReturns,highReturns
       returns  --sets central,lowReturns,highReturns
 

@@ -100,12 +100,15 @@ public sealed class Simulation
             {
                 Year = year,
                 HorizonYears = _rules.HorizonYears,
+                Country = _pack.Name,
+                BaseYear = _pack.BaseYear,
                 World = world,
                 Last = history[^1],
                 History = history.ToList(),
                 Enacted = _enacted,
                 StartingPolicy = _pack.Policy,
                 ElectionYear = year >= _pack.FirstElectionYear && (year - _pack.FirstElectionYear) % 4 == 0,
+                ReallocationAllowance = _rules.ReallocationAllowance * _capacity.Value,
                 Rules = _rules,
                 Check = Check,
             };

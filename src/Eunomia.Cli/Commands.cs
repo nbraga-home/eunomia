@@ -14,9 +14,9 @@ public static class Commands
 
     public static int Run(Args a)
     {
-        var (config, baseline) = LoadConfig(a);
+        var (config, settings) = LoadConfig(a);
         string set = a.Get("set", "central");
-        var government = Occupants.Create(a.Get("occupant", "frozen"), baseline);
+        var government = Occupants.Create(a.Get("occupant", "frozen"), settings);
         ulong? seed = a.Has("flat") ? null : ulong.Parse(a.Get("seed", "1"));
         var feed = Feed(config, seed);
 
@@ -24,6 +24,8 @@ public static class Commands
         string label = seed is null ? "flat" : $"s{seed}";
         string outDir = a.Get("out", Path.Combine(RepoRoot(), "runs", $"{government.Name}-{set}-{label}"));
         RunWriter.Write(outDir, run, feed, seed);
+        if (government is Eunomia.Governments.Ai.ITranscribed ai)
+            AiWriter.Write(outDir, run, ai, config.Pack.BaseYear, $"{government.Name} ({settings.Model}) / {set} / {label}");
 
         var s = run.Summary;
         string breaches = s.Breaches.Count == 0 ? "" : ": " + string.Join("; ", s.Breaches.Take(5).Select(b => $"{b.Floor} y{b.Year} ({b.Detail})"));
@@ -40,7 +42,7 @@ public static class Commands
     /// <summary>Two occupants in the same worlds. Each pair shares a seed, so world shocks cancel.</summary>
     public static int Pair(Args a)
     {
-        var (config, baseline) = LoadConfig(a);
+        var (config, settings) = LoadConfig(a);
         string nameA = a.Get("a", "technocrat"), nameB = a.Get("b", "statusquo");
         var seeds = a.GetSeeds("seeds", "1-20");
         var sets = a.GetList("sets", "central,lowReturns,highReturns");
@@ -56,8 +58,8 @@ public static class Commands
             foreach (ulong seed in seeds)
             {
                 var feed = Feed(config, seed);
-                var ra = new Simulation(config, set, feed).Run(Occupants.Create(nameA, baseline)).Summary;
-                var rb = new Simulation(config, set, feed).Run(Occupants.Create(nameB, baseline)).Summary;
+                var ra = new Simulation(config, set, feed).Run(Occupants.Create(nameA, settings)).Summary;
+                var rb = new Simulation(config, set, feed).Run(Occupants.Create(nameB, settings)).Summary;
                 var outcome = Judge.Compare(ra, rb, config.Government.ScoreTolerance);
                 double fd = ra.FinalMedian / rb.FinalMedian - 1, wd = ra.WorstMedian / rb.WorstMedian - 1;
                 outcomes.Add(outcome);
@@ -143,14 +145,15 @@ public static class Commands
             ? WorldGenerator.Flat(config.World, config.Government.HorizonYears)
             : WorldGenerator.Generate(config.World, seed.Value, config.Government.HorizonYears);
 
-    internal static (SimulationConfig Config, BaselineConfig Baseline) LoadConfig(Args a)
+    internal static (SimulationConfig Config, OccupantSettings Settings) LoadConfig(Args a)
     {
         string configDir = a.Get("config", Path.Combine(RepoRoot(), "config"));
         var config = ConfigLoader.Load(configDir, a.Get("pack", Path.Combine(RepoRoot(), "packs", "portugal")));
         if (a.Has("horizon"))
-            config = config with { Government = config.Government with { HorizonYears = int.Parse(a.Get("horizon", "20")) } };
+            config = config with { Government = config.Government with { HorizonYears = int.Parse(a.Get("horizon", "40")) } };
         var baseline = ConfigLoader.LoadFile<BaselineConfig>(Path.Combine(configDir, "baseline.json"));
-        return (config, baseline);
+        var settings = new OccupantSettings(baseline, configDir, a.Get("model", "claude-haiku"), Log: Console.Error.WriteLine);
+        return (config, settings);
     }
 
     internal static string RepoRoot()

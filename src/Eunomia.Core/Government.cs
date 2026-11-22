@@ -21,6 +21,9 @@ public sealed record MeetingContext
 {
     public required int Year { get; init; }
     public required int HorizonYears { get; init; }
+    public required string Country { get; init; }
+    /// <summary>Calendar year of the opening year. Year 0 of the run is BaseYear + 1.</summary>
+    public required int BaseYear { get; init; }
     /// <summary>This year's world, as it stands when the budget is set.</summary>
     public required FeedRow World { get; init; }
     /// <summary>Last year's results (the opening year when Year is 0).</summary>
@@ -30,6 +33,8 @@ public sealed record MeetingContext
     public required Policy Enacted { get; init; }
     public required Policy StartingPolicy { get; init; }
     public required bool ElectionYear { get; init; }
+    /// <summary>Share of the budget that can move between lines this year (grows with state capacity).</summary>
+    public required double ReallocationAllowance { get; init; }
     public required GovernmentConfig Rules { get; init; }
     /// <summary>Validates a proposal and returns its feasible form, envelope and appropriations. May be called freely.</summary>
     public required Func<Policy, CheckResult> Check { get; init; }

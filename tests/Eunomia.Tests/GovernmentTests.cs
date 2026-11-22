@@ -53,6 +53,6 @@ public class GovernmentTests
     public void EveryOccupantCanBeCreatedByName()
     {
         foreach (string name in Occupants.Names)
-            Assert.Equal(name, Occupants.Create(name, Baseline).Name);
+            Assert.Equal(name, Occupants.Create(name, new OccupantSettings(Baseline, Repo.Config)).Name);
     }
 }
